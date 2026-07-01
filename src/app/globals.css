@@ -1,0 +1,112 @@
+@import "tailwindcss";
+
+@theme {
+  --color-matte-black: #050505;
+  --color-charcoal: #121212;
+  --color-ivory: #faf8f5;
+  --color-warm-white: #f4f2ee;
+  --color-gold: #d4af37;
+  --color-champagne: #ebdcb9;
+  --color-dark-walnut: #2b1e17;
+  --color-bronze: #804a00;
+  
+  --font-serif: var(--font-serif), Georgia, serif;
+  --font-sans: var(--font-sans), Inter, sans-serif;
+  
+  --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-spin-slow: spin 20s linear infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-stitch: stitch-draw 3s ease-in-out forwards;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(0.5deg);
+  }
+}
+
+@keyframes stitch-draw {
+  from {
+    stroke-dashoffset: 1000;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+:root {
+  --background: #050505;
+  --foreground: #faf8f5;
+}
+
+/* Custom scrollbar to keep it luxury and unobtrusive */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #050505;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a2a2a;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #d4af37;
+}
+
+/* Global resets and structure */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--background);
+  color: var(--foreground);
+  overflow-x: hidden;
+  font-family: var(--font-sans);
+}
+
+/* Glassmorphism utility */
+.glass {
+  background: rgba(18, 18, 18, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-gold {
+  background: rgba(43, 30, 23, 0.2);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+/* Custom cursor hide */
+@media (pointer: fine) {
+  .custom-cursor-active {
+    cursor: none;
+  }
+  .custom-cursor-active a,
+  .custom-cursor-active button,
+  .custom-cursor-active [role="button"] {
+    cursor: none;
+  }
+}
+
+/* Text stroke for editorial outline effect */
+.text-stroke {
+  -webkit-text-stroke: 1px rgba(250, 248, 245, 0.3);
+  color: transparent;
+}
+
+.text-stroke-gold {
+  -webkit-text-stroke: 1px rgba(212, 175, 55, 0.4);
+  color: transparent;
+}
+
