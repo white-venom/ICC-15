@@ -146,17 +146,6 @@ export default function Home() {
                   </p>
                 </div>
 
-                {/* CTAs — editorial underline style */}
-                <div className="flex items-center gap-8 md:ml-auto">
-                  <button
-                    onClick={() => router.push('/collection')}
-                    className="group relative text-sm uppercase tracking-[0.3em] font-sans text-ivory hover:text-gold transition-colors duration-300 cursor-pointer pb-1"
-                    data-cursor="button"
-                  >
-                    Explore Collection
-                    <span className="absolute bottom-0 left-0 w-0 group-hover:w-full h-px bg-gold transition-all duration-500 ease-out" />
-                  </button>
-                </div>
               </motion.div>
             </div>
           </section>
