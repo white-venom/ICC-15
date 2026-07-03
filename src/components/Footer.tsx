@@ -133,7 +133,7 @@ export default function Footer() {
             Subscribe
           </h3>
           <p className="text-xs font-light text-ivory/50 leading-relaxed">
-            Subscribe to receive private styling guides and exclusive release announcements.
+            Subscribe to receive exclusive release announcements.
           </p>
           {!subscribed ? (
             <form onSubmit={handleSubmit} className="relative mt-2 border-b border-white/10 focus-within:border-gold transition-colors duration-300">

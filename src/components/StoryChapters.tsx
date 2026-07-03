@@ -35,22 +35,7 @@ const CRAFT_STEPS = [
   },
 ];
 
-const FOUNDERS = [
-  {
-    name: 'Aryan Mehta',
-    title: 'Co-Founder & Creative Director',
-    quote: '"We set out to prove that a shirt is not a commodity. It is an identity."',
-    bio: 'With 15 years in luxury textiles and a background in Italian fashion houses, Aryan brought a vision of precision craftsmanship to Indian formal wear.',
-    image: '/assets/founder_one.png',
-  },
-  {
-    name: 'Kabir Nair',
-    title: 'Co-Founder & Head of Craft',
-    quote: '"Every detail is a decision. We make 200 decisions in a single shirt."',
-    bio: 'Trained under master tailors in Milan and London, Kabir leads the ateliers responsible for every stitch bearing the Ink & Cotton name.',
-    image: '/assets/founder_two.png',
-  },
-];
+
 
 export default function StoryChapters({ onSectionChange, onFocusAreaChange }: StoryChaptersProps) {
   const [craftStep, setCraftStep] = useState<'collar' | 'sleeve' | 'button'>('collar');
@@ -59,13 +44,11 @@ export default function StoryChapters({ onSectionChange, onFocusAreaChange }: St
   const c2Ref = useRef(null);
   const c3Ref = useRef(null);
   const c4Ref = useRef(null);
-  const c5Ref = useRef(null);
 
   const c1InView = useInView(c1Ref, { amount: 0.4 });
   const c2InView = useInView(c2Ref, { amount: 0.4 });
   const c3InView = useInView(c3Ref, { amount: 0.4 });
   const c4InView = useInView(c4Ref, { amount: 0.4 });
-  const c5InView = useInView(c5Ref, { amount: 0.4 });
 
   useEffect(() => {
     if (c1InView) onSectionChange('cotton');
@@ -74,8 +57,8 @@ export default function StoryChapters({ onSectionChange, onFocusAreaChange }: St
     else if (c4InView) {
       onSectionChange('craftsmanship');
       onFocusAreaChange(craftStep);
-    } else if (c5InView) onSectionChange('gentleman');
-  }, [c1InView, c2InView, c3InView, c4InView, c5InView, craftStep, onSectionChange, onFocusAreaChange]);
+    }
+  }, [c1InView, c2InView, c3InView, c4InView, craftStep, onSectionChange, onFocusAreaChange]);
 
   const handleCraftStep = (step: 'collar' | 'sleeve' | 'button') => {
     setCraftStep(step);
@@ -132,7 +115,7 @@ export default function StoryChapters({ onSectionChange, onFocusAreaChange }: St
             </div>
             {/* Centered vertical stitch line */}
             <div className="flex flex-col items-center pt-6 w-full justify-center">
-              <div className="w-[1.5px] h-48 bg-gradient-to-b from-gold/50 via-gold/10 to-transparent relative">
+              <div className="w-[1.5px] h-28 bg-gradient-to-b from-gold/50 via-gold/10 to-transparent relative">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-gold shadow-[0_0_6px_#d4af37] animate-scroll-stitch" />
               </div>
             </div>
@@ -184,7 +167,7 @@ export default function StoryChapters({ onSectionChange, onFocusAreaChange }: St
             </div>
             {/* Centered vertical stitch line */}
             <div className="flex flex-col items-center pt-6 w-full justify-center">
-              <div className="w-[1.5px] h-48 bg-gradient-to-b from-gold/50 via-gold/10 to-transparent relative">
+              <div className="w-[1.5px] h-28 bg-gradient-to-b from-gold/50 via-gold/10 to-transparent relative">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-gold shadow-[0_0_6px_#d4af37] animate-scroll-stitch" />
               </div>
             </div>
@@ -236,7 +219,7 @@ export default function StoryChapters({ onSectionChange, onFocusAreaChange }: St
             </div>
             {/* Centered vertical stitch line */}
             <div className="flex flex-col items-center pt-6 w-full justify-center">
-              <div className="w-[1.5px] h-48 bg-gradient-to-b from-gold/50 via-gold/10 to-transparent relative">
+              <div className="w-[1.5px] h-28 bg-gradient-to-b from-gold/50 via-gold/10 to-transparent relative">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-gold shadow-[0_0_6px_#d4af37] animate-scroll-stitch" />
               </div>
             </div>
@@ -247,7 +230,7 @@ export default function StoryChapters({ onSectionChange, onFocusAreaChange }: St
       {/* ── CHAPTER IV: CRAFTSMANSHIP — Precision Layout ─── */}
       <section
         ref={c4Ref}
-        className="py-12 md:py-16 min-h-[60vh] w-full relative flex items-center overflow-hidden"
+        className="py-8 md:py-12 min-h-[50vh] w-full relative flex items-center overflow-hidden"
       >
         {/* Subtle measurement grid */}
         <div
@@ -262,7 +245,7 @@ export default function StoryChapters({ onSectionChange, onFocusAreaChange }: St
 
         <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 font-serif text-[35vw] leading-none font-bold text-white/[0.022] select-none pointer-events-none">IV</span>
 
-        <div className="relative z-10 w-full px-10 md:px-24 py-24 max-w-7xl mx-auto">
+        <div className="relative z-10 w-full px-10 md:px-24 py-12 max-w-7xl mx-auto">
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -348,11 +331,10 @@ export default function StoryChapters({ onSectionChange, onFocusAreaChange }: St
                     viewport={{ once: true }}
                     transition={{ duration: 0.6, delay: i * 0.1 }}
                     onClick={() => handleCraftStep(step.id)}
-                    className={`group w-full text-left transition-all duration-400 pointer-events-auto relative overflow-hidden border ${
-                      isActive
-                        ? 'border-gold/60 bg-gold/8'
-                        : 'border-white/10 hover:border-white/25 bg-white/[0.02] hover:bg-white/[0.04]'
-                    }`}
+                    className={`group w-full text-left transition-all duration-400 pointer-events-auto relative overflow-hidden border ${isActive
+                      ? 'border-gold/60 bg-gold/8'
+                      : 'border-white/10 hover:border-white/25 bg-white/[0.02] hover:bg-white/[0.04]'
+                      }`}
                     style={{ borderRadius: '3px' }}
                     data-cursor="button"
                   >
@@ -377,111 +359,10 @@ export default function StoryChapters({ onSectionChange, onFocusAreaChange }: St
               })}
             </div>
           </div>
-          {/* Centered vertical stitch line */}
-          <div className="flex flex-col items-center pt-10 w-full justify-center">
-            <div className="w-[1.5px] h-48 bg-gradient-to-b from-gold/50 via-gold/10 to-transparent relative">
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-gold shadow-[0_0_6px_#d4af37] animate-scroll-stitch" />
-            </div>
-          </div>
         </div>
 
       </section>
 
-      {/* ── CHAPTER V: The Founders ─────────────────────── */}
-      <section
-        id="journal"
-        ref={c5Ref}
-        className="py-12 md:py-16 min-h-[60vh] w-full relative flex items-center overflow-hidden"
-      >
-        <span className="absolute left-0 top-1/2 -translate-y-1/2 font-serif text-[22vw] leading-none font-bold text-white/[0.015] select-none pointer-events-none pl-4">V</span>
-
-        <div className="relative z-10 w-full px-10 md:px-24 max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-12 md:gap-16">
-          
-          {/* Left Column: Brand Vision & Chapter Title */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="w-full md:w-[40%] flex flex-col gap-6"
-          >
-            <div>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-6 h-px bg-gold" />
-                <span className="text-[9px] uppercase tracking-[0.45em] text-gold font-sans">Chapter V</span>
-              </div>
-              <h2 className="font-serif text-[7vw] md:text-[4vw] leading-none uppercase font-light text-white mb-2" style={{ letterSpacing: '-0.02em' }}>
-                The Founders
-              </h2>
-              <p className="text-xs uppercase tracking-[0.3em] text-white/40">
-                The vision behind the craft
-              </p>
-            </div>
-
-            <div className="border-t border-white/10 pt-6 mt-2">
-              <p className="font-serif text-lg md:text-xl font-light text-white/80 leading-relaxed italic">
-                "We do not sell shirts. We sell the confidence of a man who knows exactly who he is."
-              </p>
-              <div className="mt-4 flex flex-col gap-0.5">
-                <span className="text-[9px] uppercase tracking-[0.35em] text-gold font-sans">Ink &amp; Cotton Club</span>
-                <span className="text-[8px] uppercase tracking-[0.25em] text-white/30 font-sans">Est. 2026</span>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Right Column: Founders Vertical Stack */}
-          <div className="w-full md:w-[60%] flex flex-col gap-6 md:gap-8">
-            {FOUNDERS.map((founder, i) => (
-              <motion.div
-                key={founder.name}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: i * 0.15, ease: [0.16, 1, 0.3, 1] }}
-                className="group flex flex-col sm:flex-row gap-6 p-6 rounded-2xl bg-white/[0.02] border border-white/5 backdrop-blur-md hover:border-gold/20 transition-all duration-500"
-              >
-                {/* Portrait thumbnail */}
-                <div className="relative w-28 h-28 sm:w-32 sm:h-32 shrink-0 overflow-hidden rounded-xl bg-[#111] border border-white/10">
-                  <img
-                    src={founder.image}
-                    alt={founder.name}
-                    className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
-                  />
-                  {/* Top-left design accent */}
-                  <div className="absolute top-0 left-0 w-4 h-px bg-gold" />
-                  <div className="absolute top-0 left-0 h-4 w-px bg-gold" />
-                </div>
-
-                {/* Details */}
-                <div className="flex flex-col justify-between gap-3 flex-1">
-                  <div>
-                    <div className="flex items-baseline justify-between">
-                      <h3 className="font-serif text-lg md:text-xl font-light text-white uppercase tracking-wide">
-                        {founder.name}
-                      </h3>
-                      <span className="font-serif text-2xl font-light text-white/[0.06] leading-none">
-                        0{i + 1}
-                      </span>
-                    </div>
-                    <span className="text-[9px] uppercase tracking-[0.3em] text-gold font-sans mt-0.5 block">
-                      {founder.title}
-                    </span>
-                  </div>
-
-                  <p className="font-serif italic text-gold/75 text-[13px] leading-relaxed">
-                    {founder.quote}
-                  </p>
-
-                  <p className="text-xs font-light text-white/55 leading-relaxed">
-                    {founder.bio}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-        </div>
-      </section>
     </div>
   );
 }

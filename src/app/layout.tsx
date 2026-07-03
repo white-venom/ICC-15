@@ -32,7 +32,6 @@ export const metadata: Metadata = {
 import { AppProvider } from "@/context/AppContext";
 import NavbarWrapper from "@/components/NavbarWrapper";
 import Footer from "@/components/Footer";
-import BookingModal from "@/components/BookingModal";
 import CartWrapper from "@/components/CartWrapper";
 
 export default function RootLayout({
@@ -54,7 +53,6 @@ export default function RootLayout({
             </main>
             <Footer />
             <CartWrapper />
-            <BookingModal />
           </SmoothScroll>
         </AppProvider>
       </body>

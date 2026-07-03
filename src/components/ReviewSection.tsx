@@ -1,8 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Star, Quote, Sparkles } from 'lucide-react';
-import { useAppContext } from '@/context/AppContext';
+import { Star, Quote } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const REVIEWS = [
@@ -36,7 +35,6 @@ const REVIEWS = [
 ];
 
 export default function ReviewSection() {
-  const { setBookingOpen } = useAppContext();
 
   return (
     <div className="bg-[#050505] border-t border-white/5">
@@ -126,26 +124,7 @@ export default function ReviewSection() {
         </div>
       </section>
 
-      {/* Elegant Atelier Invitation Section (Slightly scaled up content) */}
-      <section className="relative py-24 px-6 md:px-16 bg-[#040404] border-t border-white/5 overflow-hidden">
-        <div className="max-w-3xl mx-auto text-center relative z-10 flex flex-col items-center">
-          <Sparkles size={18} className="text-gold/80 mb-4 animate-pulse-slow" />
-          <p className="text-[10px] uppercase tracking-[0.35em] text-gold font-sans mb-3.5">Private Appointment</p>
-          <h2 className="font-serif text-3xl md:text-4xl font-light uppercase tracking-wide text-ivory mb-5 leading-tight">
-            Atelier Consultation
-          </h2>
-          <p className="text-xs md:text-sm font-light text-ivory/50 max-w-xl leading-relaxed mb-8">
-            Consult with our specialists. Elevate your wardrobe with bespoke sizing, custom thread weaves, and personal fittings.
-          </p>
-          <button
-            onClick={() => setBookingOpen(true)}
-            className="px-10 py-3.5 bg-white/5 border border-white/10 text-[11px] uppercase tracking-[0.25em] font-sans font-bold rounded-full hover:border-gold hover:text-gold transition-all duration-300 cursor-pointer shadow-lg hover:shadow-gold/5"
-            data-cursor="button"
-          >
-            Request invitation
-          </button>
-        </div>
-      </section>
+
     </div>
   );
 }

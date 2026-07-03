@@ -11,7 +11,7 @@ interface NavbarProps {
   onCartClick: () => void;
 }
 
-const NAV_LEFT  = ['Craftsmanship', 'Collection', 'Journal'];
+const NAV_LEFT  = ['Home', 'Collection', 'Craftsmanship', 'Journal'];
 const NAV_RIGHT: string[] = [];
 
 export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
@@ -29,7 +29,7 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
 
   const go = (path: string) => {
     setMobileOpen(false);
-    if (path === 'hero') {
+    if (path.toLowerCase() === 'home' || path.toLowerCase() === 'hero') {
       router.push('/');
     } else {
       router.push(`/${path.toLowerCase()}`);

@@ -15,9 +15,7 @@ export interface CartItem {
 interface AppContextType {
   cartItems: CartItem[];
   cartOpen: boolean;
-  bookingOpen: boolean;
   setCartOpen: (open: boolean) => void;
-  setBookingOpen: (open: boolean) => void;
   addToCart: (item: Omit<CartItem, 'quantity' | 'id'> & { id: string }) => void;
   removeFromCart: (id: string) => void;
   clearCart: () => void;
@@ -28,7 +26,6 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
-  const [bookingOpen, setBookingOpen] = useState(false);
 
   const addToCart = (item: Omit<CartItem, 'quantity' | 'id'> & { id: string }) => {
     setCartItems((prev) => {
@@ -53,9 +50,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       value={{
         cartItems,
         cartOpen,
-        bookingOpen,
         setCartOpen,
-        setBookingOpen,
         addToCart,
         removeFromCart,
         clearCart,

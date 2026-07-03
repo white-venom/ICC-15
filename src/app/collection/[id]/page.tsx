@@ -19,6 +19,11 @@ const PRODUCTS = {
     description: 'Woven from 100% long-staple Giza cotton with a semi-spread collar, double-button mitred cuffs, and champagne-hued shell buttons. The white canvas of refinement — for boardrooms, ceremonies, and every moment demanding authority.',
     features: ['Giza Cotton', 'Pearl Buttons', 'Double Cuffs', 'French Seams', 'Semi-spread Collar', 'Fused Interlining'],
     image: '/assets/shirt_white.png',
+    images: [
+      '/assets/shirt_white.png',
+      '/assets/shirt_white_collar.png',
+      '/assets/shirt_white_cuff.png'
+    ],
     accent: '#d4af37',
     gradient: 'from-[#171310] via-[#0b0a08] to-[#040404]',
     sizes: ['38', '39', '40', '41', '42', '43', '44'],
@@ -38,6 +43,11 @@ const PRODUCTS = {
     description: 'Constructed from high-twist double-ply yarns with an organic calendering process for a sophisticated matte-sheen texture. Black redefined — structured, sleek, and commanding.',
     features: ['Double Ply', 'Matte Sheen', 'Tapered Waist', 'Executive Cut', 'French Placket', 'Mitered Cuffs'],
     image: '/assets/shirt_black.png',
+    images: [
+      '/assets/shirt_black.png',
+      '/assets/shirt_black_collar.png',
+      '/assets/shirt_black_cuff.png'
+    ],
     accent: '#c0c0c0',
     gradient: 'from-[#111111] via-[#090909] to-[#040404]',
     sizes: ['38', '39', '40', '41', '42', '43', '44'],
@@ -57,6 +67,11 @@ const PRODUCTS = {
     description: 'Woven with a micro-twill pattern. Deep royal blue yarns mercerized twice for maximum color depth and silk-like hand feel. Reserved for occasions that demand excellence.',
     features: ['Micro-Twill', 'Double Mercerized', 'Bespoke Fit', 'Iridescent Sheen', 'Mother-of-Pearl Buttons', 'Double Side Seams'],
     image: '/assets/shirt_blue.png',
+    images: [
+      '/assets/shirt_blue.png',
+      '/assets/shirt_blue_collar.png',
+      '/assets/shirt_blue_cuff.png'
+    ],
     accent: '#4a7fc1',
     gradient: 'from-[#070b12] via-[#04060b] to-[#040404]',
     sizes: ['38', '39', '40', '41', '42', '43', '44'],
@@ -86,6 +101,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const [selectedSize, setSelectedSize] = useState('40');
   const [added, setAdded] = useState(false);
   const [showSizeChart, setShowSizeChart] = useState(false);
+  const [activeImage, setActiveImage] = useState(product?.image || '');
 
   if (!product) {
     notFound();
@@ -126,47 +142,76 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       <div className="max-w-7xl mx-auto px-6 md:px-16 py-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start">
 
-          {/* ─ LEFT: IMAGE ─ */}
+          {/* ─ LEFT: IMAGES VIEW RACK ─ */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="relative"
+            className="flex flex-col-reverse md:flex-row gap-5 relative z-10"
           >
-            {/* Ambient glow */}
-            <div
-              className="absolute -inset-8 rounded-full blur-[80px] opacity-25 pointer-events-none"
-              style={{ background: `radial-gradient(circle, ${product.accent}44, transparent 70%)` }}
-            />
-
-            <div className={`relative rounded-2xl overflow-hidden bg-gradient-to-b ${product.gradient} border border-white/5 aspect-[3/4]`}>
-              {/* Badge */}
-              <div className="absolute top-6 left-6 z-10">
-                <span
-                  className="px-3 py-1 text-[8px] uppercase tracking-[0.3em] font-sans border rounded-full"
-                  style={{ borderColor: product.accent + '55', color: product.accent }}
+            {/* Thumbnails list */}
+            <div className="flex md:flex-col gap-3 shrink-0">
+              {product.images.map((imgUrl, index) => (
+                <button
+                  key={index}
+                  onClick={() => setActiveImage(imgUrl)}
+                  className={`relative w-20 h-24 rounded-xl overflow-hidden bg-gradient-to-b ${product.gradient} border transition-all duration-300 ${
+                    activeImage === imgUrl ? 'border-gold scale-105' : 'border-white/10 opacity-60 hover:opacity-100 hover:border-white/30'
+                  }`}
                 >
-                  {product.badge}
-                </span>
-              </div>
+                  <img
+                    src={imgUrl}
+                    alt={`${product.name} detail view ${index + 1}`}
+                    className="w-full h-full object-contain p-2 mix-blend-luminosity"
+                  />
+                </button>
+              ))}
+            </div>
 
-              {/* Rating chip */}
-              <div className="absolute top-6 right-6 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-sm border border-white/10 z-10">
-                <Star size={10} className="text-gold fill-gold" />
-                <span className="text-[9px] font-sans text-ivory/70">{product.rating} ({product.reviews})</span>
-              </div>
-
-              {/* Shirt image */}
-              <img
-                src={product.image}
-                alt={product.name}
-                className="absolute inset-0 w-full h-full object-contain object-center p-10 mix-blend-luminosity opacity-92"
+            {/* Main Image Viewport */}
+            <div className="relative flex-grow w-full">
+              {/* Ambient glow */}
+              <div
+                className="absolute -inset-8 rounded-full blur-[80px] opacity-25 pointer-events-none"
+                style={{ background: `radial-gradient(circle, ${product.accent}44, transparent 70%)` }}
               />
 
-              {/* Color chip */}
-              <div className="absolute bottom-6 left-6 flex items-center gap-2 z-10">
-                <span className="w-2.5 h-2.5 rounded-full border border-white/20" style={{ backgroundColor: product.accent }} />
-                <span className="text-[9px] uppercase tracking-[0.35em] text-ivory/40 font-sans">{product.colorName}</span>
+              <div className={`relative rounded-2xl overflow-hidden bg-gradient-to-b ${product.gradient} border border-white/5 aspect-[3/4] w-full`}>
+                {/* Badge */}
+                <div className="absolute top-6 left-6 z-10">
+                  <span
+                    className="px-3 py-1 text-[8px] uppercase tracking-[0.3em] font-sans border rounded-full"
+                    style={{ borderColor: product.accent + '55', color: product.accent }}
+                  >
+                    {product.badge}
+                  </span>
+                </div>
+
+                {/* Rating chip */}
+                <div className="absolute top-6 right-6 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-sm border border-white/10 z-10">
+                  <Star size={10} className="text-gold fill-gold" />
+                  <span className="text-[9px] font-sans text-ivory/70">{product.rating} ({product.reviews})</span>
+                </div>
+
+                {/* Main Shirt image */}
+                <AnimatePresence mode="wait">
+                  <motion.img
+                    key={activeImage}
+                    src={activeImage}
+                    alt={product.name}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="absolute inset-0 w-full h-full object-contain object-center p-10 mix-blend-luminosity opacity-92"
+                  />
+                </AnimatePresence>
+
+                {/* Color chip */}
+                <div className="absolute bottom-6 left-6 flex items-center gap-2 z-10">
+                  <span className="w-2.5 h-2.5 rounded-full border border-white/20" style={{ backgroundColor: product.accent }} />
+                  <span className="text-[9px] uppercase tracking-[0.35em] text-ivory/40 font-sans">{product.colorName}</span>
+                </div>
               </div>
             </div>
           </motion.div>
