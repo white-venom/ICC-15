@@ -91,145 +91,163 @@ export default function StoryChapters({ onSectionChange, onFocusAreaChange }: St
       <section
         id="craftsmanship"
         ref={c1Ref}
-        className="min-h-screen w-full relative flex items-center overflow-hidden"
+        className="py-4 md:py-8 min-h-[45vh] w-full relative flex items-center overflow-hidden"
       >
-        <span className="absolute right-0 top-1/2 -translate-y-1/2 font-serif text-[28vw] leading-none font-bold text-white/[0.025] select-none pointer-events-none pr-4">I</span>
-        <div className="relative z-10 w-full px-10 md:px-24 py-32 flex flex-col md:flex-row items-start md:items-center gap-16 max-w-7xl mx-auto">
+        <span className="absolute right-10 top-1/2 -translate-y-1/2 font-serif text-[28vw] leading-none font-bold text-white/[0.015] select-none pointer-events-none">I</span>
+        <div className="relative z-10 w-full px-6 py-3 flex flex-col items-center text-center gap-4 max-w-4xl mx-auto">
           <motion.div
-            initial={{ opacity: 0, x: -40 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: -20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-            className="flex flex-col gap-4 shrink-0"
+            className="flex flex-col items-center gap-3"
           >
             <div className="flex items-center gap-3">
               <div className="w-6 h-px bg-gold" />
               <span className="text-[9px] uppercase tracking-[0.45em] text-gold font-sans">Chapter I</span>
+              <div className="w-6 h-px bg-gold" />
             </div>
-            <h2 className="font-serif text-[7vw] md:text-[5vw] leading-none uppercase font-light text-white" style={{ letterSpacing: '-0.02em' }}>
-              The<br />Cotton
+            <h2 className="font-serif text-5xl md:text-7xl leading-none uppercase font-light text-white tracking-wide">
+              The Cotton
             </h2>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 1, delay: 0.3 }}
-            className="flex flex-col gap-8 max-w-xl bg-black/75 backdrop-blur-md p-10 md:p-12 rounded-3xl border border-white/10 shadow-2xl"
+            transition={{ duration: 1, delay: 0.2 }}
+            className="flex flex-col items-center gap-6 max-w-2xl"
           >
-            <p className="font-serif text-xl md:text-2xl italic text-gold font-light">Hand-harvested in the fertile valleys of Egypt.</p>
-            <p className="text-base font-light text-white leading-relaxed">
+            <p className="font-serif text-xl md:text-2xl italic text-gold font-light leading-snug">Hand-harvested in the fertile valleys of Egypt.</p>
+            <p className="text-sm md:text-base font-light text-ivory/70 leading-relaxed font-sans max-w-xl">
               Every fiber begins its journey in the rich soil of Giza. We harvest exclusively long-staple organic cotton under golden sunlight — extraordinarily strong, yet unbelievably soft. A pure, pristine canvas upon which luxury is built.
             </p>
-            <div className="flex items-center gap-8 pt-6 border-t border-white/15">
+            <div className="flex flex-row flex-wrap justify-center items-center gap-10 md:gap-16 pt-6 border-t border-white/10 w-full">
               {[['Long-staple', 'Giza Cotton'], ['100%', 'Organic'], ['200s', 'Thread Count']].map(([val, label]) => (
-                <div key={label} className="flex flex-col gap-1.5">
-                  <span className="text-gold font-serif text-2xl font-light">{val}</span>
-                  <span className="text-[10px] uppercase tracking-[0.3em] text-white/60">{label}</span>
+                <div key={label} className="flex flex-col gap-1 items-center">
+                  <span className="text-gold font-serif text-xl md:text-2xl font-light">{val}</span>
+                  <span className="text-[9px] uppercase tracking-[0.2em] text-ivory/40 font-sans">{label}</span>
                 </div>
               ))}
             </div>
+            {/* Centered vertical stitch line */}
+            <div className="flex flex-col items-center pt-6 w-full justify-center">
+              <div className="w-[1.5px] h-48 bg-gradient-to-b from-gold/50 via-gold/10 to-transparent relative">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-gold shadow-[0_0_6px_#d4af37] animate-scroll-stitch" />
+              </div>
+            </div>
           </motion.div>
         </div>
-        <div className="absolute bottom-0 left-10 md:left-24 right-10 md:right-24 h-px bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
       </section>
 
       {/* ── CHAPTER II: The Thread ───────────────────────── */}
       <section
         ref={c2Ref}
-        className="min-h-screen w-full relative flex items-center overflow-hidden"
+        className="py-4 md:py-8 min-h-[45vh] w-full relative flex items-center overflow-hidden"
       >
-        <span className="absolute left-0 top-1/2 -translate-y-1/2 font-serif text-[28vw] leading-none font-bold text-white/[0.025] select-none pointer-events-none pl-4">II</span>
-        <div className="relative z-10 w-full px-10 md:px-24 py-32 flex flex-col md:flex-row-reverse items-start md:items-center gap-16 max-w-7xl mx-auto">
+        <span className="absolute left-10 top-1/2 -translate-y-1/2 font-serif text-[28vw] leading-none font-bold text-white/[0.015] select-none pointer-events-none">II</span>
+        <div className="relative z-10 w-full px-6 py-3 flex flex-col items-center text-center gap-4 max-w-4xl mx-auto">
           <motion.div
-            initial={{ opacity: 0, x: 40 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: -20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 1 }}
-            className="flex flex-col gap-4 shrink-0 md:items-end"
+            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+            className="flex flex-col items-center gap-3"
           >
             <div className="flex items-center gap-3">
+              <div className="w-6 h-px bg-gold" />
               <span className="text-[9px] uppercase tracking-[0.45em] text-gold font-sans">Chapter II</span>
               <div className="w-6 h-px bg-gold" />
             </div>
-            <h2 className="font-serif text-[7vw] md:text-[5vw] leading-none uppercase font-light text-white md:text-right" style={{ letterSpacing: '-0.02em' }}>
-              The<br />Thread
+            <h2 className="font-serif text-5xl md:text-7xl leading-none uppercase font-light text-white tracking-wide">
+              The Thread
             </h2>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 1, delay: 0.3 }}
-            className="flex flex-col gap-8 max-w-xl bg-black/75 backdrop-blur-md p-10 md:p-12 rounded-3xl border border-white/10 shadow-2xl"
+            transition={{ duration: 1, delay: 0.2 }}
+            className="flex flex-col items-center gap-6 max-w-2xl"
           >
-            <p className="font-serif text-xl md:text-2xl italic text-gold font-light">Twisted 120 times for structural integrity.</p>
-            <p className="text-base font-light text-white leading-relaxed">
+            <p className="font-serif text-xl md:text-2xl italic text-gold font-light leading-snug">Spun with absolute geometrical precision.</p>
+            <p className="text-sm md:text-base font-light text-ivory/70 leading-relaxed font-sans max-w-xl">
               Cotton strands are spun into double-ply threads, twisted exactly 120 times per inch. This high twist ratio shields the fabric from creasing while generating a natural, pearlescent reflection. Strength meets refinement in every strand.
             </p>
-            <div className="flex items-center gap-8 pt-6 border-t border-white/15">
+            <div className="flex flex-row flex-wrap justify-center items-center gap-10 md:gap-16 pt-6 border-t border-white/10 w-full">
               {[['120×', 'Twist / Inch'], ['2-Ply', 'Double Strand'], ['Pearlescent', 'Reflection']].map(([val, label]) => (
-                <div key={label} className="flex flex-col gap-1.5">
-                  <span className="text-gold font-serif text-2xl font-light">{val}</span>
-                  <span className="text-[10px] uppercase tracking-[0.3em] text-white/60">{label}</span>
+                <div key={label} className="flex flex-col gap-1 items-center">
+                  <span className="text-gold font-serif text-xl md:text-2xl font-light">{val}</span>
+                  <span className="text-[9px] uppercase tracking-[0.2em] text-ivory/40 font-sans">{label}</span>
                 </div>
               ))}
             </div>
+            {/* Centered vertical stitch line */}
+            <div className="flex flex-col items-center pt-6 w-full justify-center">
+              <div className="w-[1.5px] h-48 bg-gradient-to-b from-gold/50 via-gold/10 to-transparent relative">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-gold shadow-[0_0_6px_#d4af37] animate-scroll-stitch" />
+              </div>
+            </div>
           </motion.div>
         </div>
-        <div className="absolute bottom-0 left-10 md:left-24 right-10 md:right-24 h-px bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
       </section>
 
       {/* ── CHAPTER III: The Fabric ──────────────────────── */}
       <section
         ref={c3Ref}
-        className="min-h-screen w-full relative flex items-center overflow-hidden"
+        className="py-4 md:py-8 min-h-[45vh] w-full relative flex items-center overflow-hidden"
       >
-        <span className="absolute right-0 top-1/2 -translate-y-1/2 font-serif text-[28vw] leading-none font-bold text-white/[0.025] select-none pointer-events-none pr-4">III</span>
-        <div className="relative z-10 w-full px-10 md:px-24 py-32 flex flex-col md:flex-row items-start md:items-center gap-16 max-w-7xl mx-auto">
+        <span className="absolute left-10 top-1/2 -translate-y-1/2 font-serif text-[28vw] leading-none font-bold text-white/[0.015] select-none pointer-events-none">III</span>
+        <div className="relative z-10 w-full px-6 py-3 flex flex-col items-center text-center gap-4 max-w-4xl mx-auto">
           <motion.div
-            initial={{ opacity: 0, x: -40 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: -20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 1 }}
-            className="flex flex-col gap-4 shrink-0"
+            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+            className="flex flex-col items-center gap-3"
           >
             <div className="flex items-center gap-3">
               <div className="w-6 h-px bg-gold" />
               <span className="text-[9px] uppercase tracking-[0.45em] text-gold font-sans">Chapter III</span>
+              <div className="w-6 h-px bg-gold" />
             </div>
-            <h2 className="font-serif text-[7vw] md:text-[5vw] leading-none uppercase font-light text-white" style={{ letterSpacing: '-0.02em' }}>
-              The<br />Fabric
+            <h2 className="font-serif text-5xl md:text-7xl leading-none uppercase font-light text-white tracking-wide">
+              The Fabric
             </h2>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 1, delay: 0.3 }}
-            className="flex flex-col gap-8 max-w-xl bg-black/75 backdrop-blur-md p-10 md:p-12 rounded-3xl border border-white/10 shadow-2xl"
+            transition={{ duration: 1, delay: 0.2 }}
+            className="flex flex-col items-center gap-6 max-w-2xl"
           >
-            <p className="font-serif text-xl md:text-2xl italic text-gold font-light">Italian weaving. Microscopic density.</p>
-            <p className="text-base font-light text-white leading-relaxed">
+            <p className="font-serif text-xl md:text-2xl italic text-gold font-light leading-snug">Woven on ancestral Italian looms.</p>
+            <p className="text-sm md:text-base font-light text-ivory/70 leading-relaxed font-sans max-w-xl">
               Woven in historic, family-owned looms in Milan, Italy. Boasting a thread count exceeding 200 threads per square inch, the finished weave breathes effortlessly like a second skin while holding sharp, majestic structure.
             </p>
-            <div className="flex items-center gap-8 pt-6 border-t border-white/15">
+            <div className="flex flex-row flex-wrap justify-center items-center gap-10 md:gap-16 pt-6 border-t border-white/10 w-full">
               {[['200+', 'Threads / in²'], ['Milan', 'Italian Loom'], ['Breathable', 'Structure']].map(([val, label]) => (
-                <div key={label} className="flex flex-col gap-1.5">
-                  <span className="text-gold font-serif text-2xl font-light">{val}</span>
-                  <span className="text-[10px] uppercase tracking-[0.3em] text-white/60">{label}</span>
+                <div key={label} className="flex flex-col gap-1 items-center">
+                  <span className="text-gold font-serif text-xl md:text-2xl font-light">{val}</span>
+                  <span className="text-[9px] uppercase tracking-[0.2em] text-ivory/40 font-sans">{label}</span>
                 </div>
               ))}
             </div>
+            {/* Centered vertical stitch line */}
+            <div className="flex flex-col items-center pt-6 w-full justify-center">
+              <div className="w-[1.5px] h-48 bg-gradient-to-b from-gold/50 via-gold/10 to-transparent relative">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-gold shadow-[0_0_6px_#d4af37] animate-scroll-stitch" />
+              </div>
+            </div>
           </motion.div>
         </div>
-        <div className="absolute bottom-0 left-10 md:left-24 right-10 md:right-24 h-px bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
       </section>
 
       {/* ── CHAPTER IV: CRAFTSMANSHIP — Precision Layout ─── */}
       <section
         ref={c4Ref}
-        className="min-h-screen w-full relative flex items-center overflow-hidden bg-[#070707]"
+        className="py-12 md:py-16 min-h-[60vh] w-full relative flex items-center overflow-hidden"
       >
         {/* Subtle measurement grid */}
         <div
@@ -240,7 +258,7 @@ export default function StoryChapters({ onSectionChange, onFocusAreaChange }: St
           }}
         />
         {/* Vignette over grid so it fades at edges */}
-        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_30%,#070707_80%)]" />
+        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(5,5,5,0.65)_85%)]" />
 
         <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 font-serif text-[35vw] leading-none font-bold text-white/[0.022] select-none pointer-events-none">IV</span>
 
@@ -251,16 +269,17 @@ export default function StoryChapters({ onSectionChange, onFocusAreaChange }: St
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
-            className="mb-14"
+            className="mb-14 flex flex-col items-center text-center"
           >
             <div className="flex items-center gap-3 mb-5">
               <div className="w-6 h-px bg-gold" />
               <span className="text-[9px] uppercase tracking-[0.45em] text-gold font-sans">Chapter IV</span>
+              <div className="w-6 h-px bg-gold" />
             </div>
-            <h2 className="font-serif text-[7vw] md:text-[4.5vw] leading-none uppercase font-light text-white mb-3" style={{ letterSpacing: '-0.02em' }}>
+            <h2 className="font-serif text-5xl md:text-7xl leading-none uppercase font-light text-white mb-3 tracking-wide">
               Craftsmanship
             </h2>
-            <p className="text-xs uppercase tracking-[0.3em] text-white/50 max-w-xs">
+            <p className="text-xs uppercase tracking-[0.3em] text-white/50 max-w-sm">
               Select a detail to reveal precision engineering data
             </p>
           </motion.div>
@@ -358,16 +377,21 @@ export default function StoryChapters({ onSectionChange, onFocusAreaChange }: St
               })}
             </div>
           </div>
+          {/* Centered vertical stitch line */}
+          <div className="flex flex-col items-center pt-10 w-full justify-center">
+            <div className="w-[1.5px] h-48 bg-gradient-to-b from-gold/50 via-gold/10 to-transparent relative">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-gold shadow-[0_0_6px_#d4af37] animate-scroll-stitch" />
+            </div>
+          </div>
         </div>
 
-        <div className="absolute bottom-0 left-10 md:left-24 right-10 md:right-24 h-px bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
       </section>
 
       {/* ── CHAPTER V: The Founders ─────────────────────── */}
       <section
         id="journal"
         ref={c5Ref}
-        className="min-h-screen md:h-screen w-full relative flex items-center overflow-hidden py-16 md:py-0"
+        className="py-12 md:py-16 min-h-[60vh] w-full relative flex items-center overflow-hidden"
       >
         <span className="absolute left-0 top-1/2 -translate-y-1/2 font-serif text-[22vw] leading-none font-bold text-white/[0.015] select-none pointer-events-none pl-4">V</span>
 
@@ -414,7 +438,7 @@ export default function StoryChapters({ onSectionChange, onFocusAreaChange }: St
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.8, delay: i * 0.15, ease: [0.16, 1, 0.3, 1] }}
-                className="group flex flex-col sm:flex-row gap-6 p-6 rounded-2xl bg-black/60 border border-white/5 hover:border-gold/20 transition-all duration-500"
+                className="group flex flex-col sm:flex-row gap-6 p-6 rounded-2xl bg-white/[0.02] border border-white/5 backdrop-blur-md hover:border-gold/20 transition-all duration-500"
               >
                 {/* Portrait thumbnail */}
                 <div className="relative w-28 h-28 sm:w-32 sm:h-32 shrink-0 overflow-hidden rounded-xl bg-[#111] border border-white/10">

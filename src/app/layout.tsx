@@ -29,6 +29,12 @@ export const metadata: Metadata = {
   },
 };
 
+import { AppProvider } from "@/context/AppContext";
+import NavbarWrapper from "@/components/NavbarWrapper";
+import Footer from "@/components/Footer";
+import BookingModal from "@/components/BookingModal";
+import CartWrapper from "@/components/CartWrapper";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -39,10 +45,18 @@ export default function RootLayout({
       lang="en"
       className={`${cormorant.variable} ${inter.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-matte-black text-ivory font-sans selection:bg-gold selection:text-matte-black overflow-x-hidden">
-        <SmoothScroll>
-          {children}
-        </SmoothScroll>
+      <body suppressHydrationWarning className="min-h-full bg-matte-black text-ivory font-sans selection:bg-gold selection:text-matte-black overflow-x-hidden flex flex-col">
+        <AppProvider>
+          <SmoothScroll>
+            <NavbarWrapper />
+            <main className="flex-grow relative">
+              {children}
+            </main>
+            <Footer />
+            <CartWrapper />
+            <BookingModal />
+          </SmoothScroll>
+        </AppProvider>
       </body>
     </html>
   );

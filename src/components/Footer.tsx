@@ -1,11 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Mail, ArrowRight, ExternalLink } from 'lucide-react';
+import { Mail, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Footer() {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const [logoError, setLogoError] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,30 +19,51 @@ export default function Footer() {
   };
 
   return (
-    <footer className="relative bg-matte-black text-ivory/80 pt-24 pb-12 px-6 md:px-12 border-t border-white/5 overflow-hidden z-10">
+    <footer className="relative bg-matte-black text-ivory/80 pt-24 pb-12 px-6 md:px-12 border-t border-white/15 overflow-hidden z-10">
       {/* Background soft ambient light */}
       <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-gold/5 blur-[120px] rounded-full pointer-events-none" />
       
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8 mb-16">
         {/* Editorial Brand Section */}
-        <div className="md:col-span-2 flex flex-col gap-6">
-          <h2 className="font-serif text-2xl lg:text-3xl tracking-[0.25em] text-ivory font-light uppercase">
-            INK &amp; COTTON CLUB
-          </h2>
-          <p className="font-serif text-sm lg:text-base font-light italic leading-relaxed text-ivory/60 max-w-sm">
+        <div className="flex flex-col gap-6">
+          <div className="flex items-center gap-4">
+            <div className="relative w-16 h-16 overflow-hidden drop-shadow-[0_0_6px_rgba(212,175,55,0.4)]">
+              {!logoError ? (
+                <Image 
+                  src="/assets/logo/logobg.png" 
+                  alt="Ink & Cotton Club Logo" 
+                  fill 
+                  className="object-contain filter sepia saturate-[2] hue-rotate-[5deg]" 
+                  onError={() => setLogoError(true)} 
+                  unoptimized 
+                />
+              ) : (
+                <svg viewBox="0 0 100 100" fill="none" className="w-full h-full text-gold">
+                  <circle cx="50" cy="50" r="45" stroke="currentColor" strokeWidth="1.2" strokeDasharray="3 3" />
+                  <path d="M42 35C42 35 34 39 34 50C34 61 42 65 42 65M58 35C58 35 50 39 50 50C50 61 58 65 58 65M50 30L50 70" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+              )}
+            </div>
+            <div className="flex flex-col items-start leading-none gap-1">
+              <span className="font-serif tracking-[0.2em] text-sm md:text-base uppercase text-white font-medium">INK &amp; COTTON CLUB</span>
+              <span className="font-sans tracking-[0.32em] text-[9px] font-bold uppercase text-gold mt-0.5">TAILORED ESSENTIALS</span>
+            </div>
+          </div>
+          
+          <p className="font-serif text-xs font-light italic leading-relaxed text-ivory/60 max-w-sm">
             &ldquo;Confidence is not loud. Elegance is not self-asserting. It is the silent presence defined by every thread.&rdquo;
           </p>
           <div className="flex gap-4 mt-2">
             <a
               href="#"
-              className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center hover:border-gold hover:text-gold transition-colors duration-300"
+              className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center hover:border-gold hover:text-gold transition-colors duration-300"
               aria-label="Instagram"
               data-cursor="button"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
+                width="14"
+                height="14"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -54,38 +78,59 @@ export default function Footer() {
             </a>
             <a
               href="#"
-              className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center hover:border-gold hover:text-gold transition-colors duration-300"
+              className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center hover:border-gold hover:text-gold transition-colors duration-300"
               aria-label="Contact"
               data-cursor="button"
             >
-              <Mail size={16} />
+              <Mail size={14} />
             </a>
           </div>
         </div>
 
         {/* Brand Navigation */}
+        <div className="flex flex-col gap-4 md:pl-4">
+          <h3 className="text-[11px] uppercase tracking-[0.2em] font-sans font-semibold text-gold">
+            Explore
+          </h3>
+          <ul className="flex flex-col gap-3 text-xs font-light">
+            <li>
+              <Link href="/craftsmanship" className="hover:text-gold hover:translate-x-1 inline-block transition-all duration-300 text-ivory/70 hover:text-ivory">
+                The Craftsmanship
+              </Link>
+            </li>
+            <li>
+              <Link href="/collection" className="hover:text-gold hover:translate-x-1 inline-block transition-all duration-300 text-ivory/70 hover:text-ivory">
+                Signature Collection
+              </Link>
+            </li>
+            <li>
+              <Link href="/journal" className="hover:text-gold hover:translate-x-1 inline-block transition-all duration-300 text-ivory/70 hover:text-ivory">
+                The Journal
+              </Link>
+            </li>
+          </ul>
+        </div>
+
+        {/* Contact Details & Atelier Address */}
         <div className="flex flex-col gap-4">
           <h3 className="text-[11px] uppercase tracking-[0.2em] font-sans font-semibold text-gold">
-            The Journal
+            Contact
           </h3>
-          <ul className="flex flex-col gap-3 text-sm font-light">
-            {['The Cotton Fibers', 'Stitching Craft', 'Modern Gentleman', 'Private Styling'].map((item) => (
-              <li key={item}>
-                <a
-                  href="#"
-                  className="hover:text-gold hover:translate-x-1 inline-block transition-all duration-300 text-ivory/70 hover:text-ivory"
-                >
-                  {item}
-                </a>
-              </li>
-            ))}
-          </ul>
+          <p className="text-xs font-light text-ivory/60 leading-relaxed">
+            Atelier 109, Rue Saint-Honoré<br />
+            75001 Paris, France
+          </p>
+          <div className="h-px bg-white/5 my-1" />
+          <p className="text-[11px] font-light text-ivory/50 leading-relaxed">
+            Phone: <a href="tel:+33140205050" className="hover:text-gold transition-colors font-medium text-ivory/75">+33 (0) 1 40 20 50 50</a><br />
+            Email: <a href="mailto:atelier@inkandcotton.club" className="hover:text-gold transition-colors font-medium text-ivory/75">atelier@inkandcotton.club</a>
+          </p>
         </div>
 
         {/* Newsletter Editorial */}
         <div className="flex flex-col gap-4">
           <h3 className="text-[11px] uppercase tracking-[0.2em] font-sans font-semibold text-gold">
-            Newsletter
+            Subscribe
           </h3>
           <p className="text-xs font-light text-ivory/50 leading-relaxed">
             Subscribe to receive private styling guides and exclusive release announcements.

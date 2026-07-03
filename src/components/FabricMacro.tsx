@@ -46,7 +46,7 @@ export default function FabricMacro() {
 
   useFrame((state) => {
     const time = state.clock.getElapsedTime();
-    
+
     // Slow camera panning and slight mesh float
     if (groupRef.current) {
       groupRef.current.position.z = Math.sin(time * 0.2) * 0.1;
@@ -64,7 +64,7 @@ export default function FabricMacro() {
   return (
     <group ref={groupRef} scale={1.2}>
       <ambientLight intensity={0.2} />
-      
+
       {/* Dynamic spotlight generating specular highlights on the fabric thread weaves */}
       <pointLight
         ref={lightRef}
