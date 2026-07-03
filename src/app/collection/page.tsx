@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { Star, ArrowRight, Flame, Sparkles, Crown, LayoutGrid } from 'lucide-react';
+import { type LucideIcon, Star, ArrowRight, Flame, Sparkles, Crown, LayoutGrid } from 'lucide-react';
 
 const PRODUCTS = [
   {
@@ -139,7 +139,7 @@ function SectionHeading({
   title,
   accent,
 }: {
-  icon: React.ElementType;
+  icon: LucideIcon;
   label: string;
   title: string;
   accent: string;
@@ -230,7 +230,7 @@ export default function CollectionPage() {
         {/* Sectioned view — Best Sellers / New Arrivals / Limited */}
         {activeTab !== 'all' &&
           sections
-            .filter((s) => activeTab === 'all' || s.key === activeTab)
+            .filter((s) => s.key === activeTab)
             .map((sec) => {
               const items = PRODUCTS.filter((p) => p.section === sec.key);
               return (
