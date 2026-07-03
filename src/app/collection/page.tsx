@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { type LucideIcon, Star, ArrowRight, Flame, Sparkles, Crown, LayoutGrid } from 'lucide-react';
+import { useAppContext } from '@/context/AppContext';
 
 const PRODUCTS = [
   {
@@ -53,6 +54,7 @@ const PRODUCTS = [
 /* ── Compact card — same design across every section ───── */
 function ProductCard({ product, idx }: { product: (typeof PRODUCTS)[0]; idx: number }) {
   const router = useRouter();
+  const { formatPrice } = useAppContext();
   return (
     <motion.div
       initial={{ opacity: 0, y: 40 }}
@@ -125,7 +127,7 @@ function ProductCard({ product, idx }: { product: (typeof PRODUCTS)[0]; idx: num
         </h3>
         <div className="flex items-center justify-between mt-1">
           <p className="font-serif italic text-sm text-ivory/40 font-light">{product.tagline}</p>
-          <span className="font-serif text-lg font-light" style={{ color: product.accent }}>${product.price}</span>
+          <span className="font-serif text-lg font-light" style={{ color: product.accent }}>{formatPrice(product.price)}</span>
         </div>
       </div>
     </motion.div>

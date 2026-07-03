@@ -19,41 +19,26 @@ export default function Footer() {
   };
 
   return (
-    <footer className="relative bg-matte-black text-ivory/80 pt-24 pb-12 px-6 md:px-12 border-t border-white/15 overflow-hidden z-10">
+    <footer className="relative bg-matte-black text-ivory/80 pt-12 pb-8 px-6 md:px-12 border-t border-white/15 overflow-hidden z-10">
       {/* Background soft ambient light */}
       <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-gold/5 blur-[120px] rounded-full pointer-events-none" />
       
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8 mb-16">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8 mb-8 items-start">
         {/* Editorial Brand Section */}
         <div className="flex flex-col gap-6">
-          <div className="flex items-center gap-4">
-            <div className="relative w-16 h-16 overflow-hidden drop-shadow-[0_0_6px_rgba(212,175,55,0.4)]">
-              {!logoError ? (
-                <Image 
-                  src="/assets/logo/logobg.png" 
-                  alt="Ink & Cotton Club Logo" 
-                  fill 
-                  className="object-contain filter sepia saturate-[2] hue-rotate-[5deg]" 
-                  onError={() => setLogoError(true)} 
-                  unoptimized 
-                />
-              ) : (
-                <svg viewBox="0 0 100 100" fill="none" className="w-full h-full text-gold">
-                  <circle cx="50" cy="50" r="45" stroke="currentColor" strokeWidth="1.2" strokeDasharray="3 3" />
-                  <path d="M42 35C42 35 34 39 34 50C34 61 42 65 42 65M58 35C58 35 50 39 50 50C50 61 58 65 58 65M50 30L50 70" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
-              )}
-            </div>
-            <div className="flex flex-col items-start leading-none gap-1">
-              <span className="font-serif tracking-[0.2em] text-sm md:text-base uppercase text-white font-medium">INK &amp; COTTON CLUB</span>
-              <span className="font-sans tracking-[0.32em] text-[9px] font-bold uppercase text-gold mt-0.5">TAILORED ESSENTIALS</span>
-            </div>
+          <div className="relative w-40 h-40 mx-auto -mt-10 overflow-hidden drop-shadow-[0_0_6px_rgba(255,255,255,0.3)] hover:scale-105 transition-transform duration-500">
+            <Image 
+              src="/assets/logo/logo.png" 
+              alt="Ink & Cotton Club Logo" 
+              fill 
+              className="object-contain brightness-0 invert" 
+              unoptimized 
+            />
           </div>
-          
-          <p className="font-serif text-xs font-light italic leading-relaxed text-ivory/60 max-w-sm">
+          <p className="-mt-8 font-serif text-base font-light italic leading-relaxed text-ivory/60 max-w-sm text-center">
             &ldquo;Confidence is not loud. Elegance is not self-asserting. It is the silent presence defined by every thread.&rdquo;
           </p>
-          <div className="flex gap-4 mt-2">
+          <div className="flex gap-4 mt-2 justify-center">
             <a
               href="#"
               className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center hover:border-gold hover:text-gold transition-colors duration-300"
@@ -92,20 +77,29 @@ export default function Footer() {
           <h3 className="text-[11px] uppercase tracking-[0.2em] font-sans font-semibold text-gold">
             Explore
           </h3>
-          <ul className="flex flex-col gap-3 text-xs font-light">
+          <ul className="flex flex-col items-start gap-0">
             <li>
-              <Link href="/craftsmanship" className="hover:text-gold hover:translate-x-1 inline-block transition-all duration-300 text-ivory/70 hover:text-ivory">
-                The Craftsmanship
+              <Link href="/" className="relative group overflow-hidden inline-block" data-cursor="button">
+                <span className="relative z-10 text-[10px] uppercase tracking-widest text-ivory/70 group-hover:text-white transition-colors duration-300 font-sans">Home</span>
+                <span className="absolute bottom-0 left-0 w-0 h-px bg-gold group-hover:w-full transition-all duration-300 ease-out" />
               </Link>
             </li>
             <li>
-              <Link href="/collection" className="hover:text-gold hover:translate-x-1 inline-block transition-all duration-300 text-ivory/70 hover:text-ivory">
-                Signature Collection
+              <Link href="/collection" className="relative group overflow-hidden inline-block" data-cursor="button">
+                <span className="relative z-10 text-[10px] uppercase tracking-widest text-ivory/70 group-hover:text-white transition-colors duration-300 font-sans">Collection</span>
+                <span className="absolute bottom-0 left-0 w-0 h-px bg-gold group-hover:w-full transition-all duration-300 ease-out" />
               </Link>
             </li>
             <li>
-              <Link href="/journal" className="hover:text-gold hover:translate-x-1 inline-block transition-all duration-300 text-ivory/70 hover:text-ivory">
-                The Journal
+              <Link href="/craftsmanship" className="relative group overflow-hidden inline-block" data-cursor="button">
+                <span className="relative z-10 text-[10px] uppercase tracking-widest text-ivory/70 group-hover:text-white transition-colors duration-300 font-sans">Craftsmanship</span>
+                <span className="absolute bottom-0 left-0 w-0 h-px bg-gold group-hover:w-full transition-all duration-300 ease-out" />
+              </Link>
+            </li>
+            <li>
+              <Link href="/journal" className="relative group overflow-hidden inline-block" data-cursor="button">
+                <span className="relative z-10 text-[10px] uppercase tracking-widest text-ivory/70 group-hover:text-white transition-colors duration-300 font-sans">Journal</span>
+                <span className="absolute bottom-0 left-0 w-0 h-px bg-gold group-hover:w-full transition-all duration-300 ease-out" />
               </Link>
             </li>
           </ul>
@@ -162,11 +156,14 @@ export default function Footer() {
         </div>
       </div>
 
+
+
       {/* Footer Bottom Rights */}
-      <div className="max-w-7xl mx-auto pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6 text-[10px] uppercase tracking-[0.15em] text-ivory/40">
+      <div className="max-w-7xl mx-auto pt-6 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6 text-xs uppercase tracking-[0.15em] text-ivory/40">
         <div>
           &copy; {new Date().getFullYear()} Ink &amp; Cotton Club. All Rights Reserved.
         </div>
+
         <div className="flex gap-6">
           <a href="#" className="hover:text-gold transition-colors duration-300">
             Privacy Policy

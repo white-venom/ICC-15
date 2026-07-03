@@ -4,7 +4,8 @@ import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { ShoppingBag, Menu, X } from 'lucide-react';
+import { ShoppingBag, Menu, X, ChevronDown } from 'lucide-react';
+import { useAppContext } from '@/context/AppContext';
 
 interface NavbarProps {
   cartCount: number;
@@ -20,6 +21,8 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
   const [logoError, setLogoError]       = useState(false);
   const [mobileOpen, setMobileOpen]     = useState(false);
   const [logoHovered, setLogoHovered]   = useState(false);
+  const [countryOpen, setCountryOpen]   = useState(false);
+  const { country, setCountry }         = useAppContext();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 80);
@@ -60,20 +63,20 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
           onMouseEnter={() => setLogoHovered(true)}
           onMouseLeave={() => setLogoHovered(false)}
         >
-          <div className="relative w-14 h-14 overflow-hidden drop-shadow-[0_0_6px_rgba(212,175,55,0.3)] transition-transform duration-300 group-hover:scale-105">
+          <div className="relative w-16 h-16 overflow-hidden drop-shadow-[0_0_6px_rgba(255,255,255,0.3)] transition-transform duration-300 group-hover:scale-105">
             {!logoError ? (
               <>
-                <Image src="/assets/logo/logobg.png" alt="Ink & Cotton Club" fill className="object-contain filter sepia saturate-[2] hue-rotate-[5deg]" onError={() => setLogoError(true)} unoptimized />
+                <Image src="/assets/logo/logobg.png" alt="Ink & Cotton Club" fill className="object-contain brightness-0 invert" onError={() => setLogoError(true)} unoptimized />
                 <AnimatePresence>
                   {logoHovered && (
                     <motion.div initial={{ left: '-100%' }} animate={{ left: '200%' }} exit={{ opacity: 0 }}
                       transition={{ duration: 0.7, ease: 'easeInOut' }}
-                      className="absolute top-0 bottom-0 w-4 bg-gradient-to-r from-transparent via-white/40 to-transparent -skew-x-12 pointer-events-none" />
+                      className="absolute top-0 bottom-0 w-4 bg-gradient-to-r from-transparent via-white/80 to-transparent -skew-x-12 pointer-events-none z-20" />
                   )}
                 </AnimatePresence>
               </>
             ) : (
-              <svg viewBox="0 0 100 100" fill="none" className="w-full h-full text-gold">
+              <svg viewBox="0 0 100 100" fill="none" className="w-full h-full text-white relative z-10">
                 <circle cx="50" cy="50" r="45" stroke="currentColor" strokeWidth="1.2" strokeDasharray="3 3" />
                 <path d="M42 35C42 35 34 39 34 50C34 61 42 65 42 65M58 35C58 35 50 39 50 50C50 61 58 65 58 65M50 30L50 70" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
@@ -81,7 +84,7 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
           </div>
           <div className="flex flex-col items-center leading-none">
             <span className="font-serif tracking-[0.2em] text-sm uppercase text-white group-hover:text-gold transition-colors duration-300">INK &amp; COTTON CLUB</span>
-            <span className="font-sans tracking-[0.3em] text-[9px] font-bold uppercase text-gold/70 mt-1">TAILORED ESSENTIALS</span>
+            <span className="font-sans tracking-[0.3em] text-[8px] font-bold uppercase text-gold/70 mt-1">TAILORED ESSENTIALS</span>
           </div>
         </div>
 
@@ -96,6 +99,36 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
 
         {/* Right CTA */}
         <div className="flex items-center gap-6">
+          {/* Country Selector */}
+          <div className="relative hidden sm:block">
+            <button 
+              onClick={() => setCountryOpen(!countryOpen)} 
+              className="flex items-center gap-1 text-[10px] uppercase tracking-widest text-white/70 hover:text-white transition-colors duration-300"
+            >
+              {country} <ChevronDown size={12} className={`transition-transform duration-300 ${countryOpen ? 'rotate-180' : ''}`} />
+            </button>
+            <AnimatePresence>
+              {countryOpen && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }} 
+                  animate={{ opacity: 1, y: 0 }} 
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute top-full right-0 mt-6 w-28 bg-[#080808] border border-white/10 rounded-sm flex flex-col overflow-hidden shadow-2xl"
+                >
+                  {['DUBAI', 'INDIA', 'UK', 'US'].map((c) => (
+                    <button 
+                      key={c}
+                      onClick={() => { setCountry(c); setCountryOpen(false); }}
+                      className={`text-[10px] uppercase tracking-widest text-left px-4 py-3 hover:bg-white/5 transition-colors duration-200 ${country === c ? 'text-gold' : 'text-white/70'}`}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
           <button onClick={() => go('collection')} className="hidden sm:block px-5 py-2 text-[11px] uppercase tracking-[0.25em] border border-gold/40 text-gold hover:bg-gold hover:text-black font-semibold transition-all duration-300 rounded-sm">
             Order Now
           </button>

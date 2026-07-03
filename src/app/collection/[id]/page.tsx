@@ -95,7 +95,7 @@ const SIZE_CHART = [
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params);
   const router = useRouter();
-  const { addToCart, setCartOpen } = useAppContext();
+  const { addToCart, setCartOpen, formatPrice } = useAppContext();
   const product = PRODUCTS[id as keyof typeof PRODUCTS];
 
   const [selectedSize, setSelectedSize] = useState('40');
@@ -270,7 +270,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
             {/* Price */}
             <div className="flex items-baseline gap-3">
-              <span className="font-serif text-3xl font-light text-gold">${product.price}</span>
+              <span className="font-serif text-3xl font-light text-gold">{formatPrice(product.price)}</span>
               <span className="text-[8px] uppercase tracking-[0.3em] text-ivory/30 font-sans">Free worldwide shipping · Made to order</span>
             </div>
 
@@ -382,7 +382,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                   color: '#050505',
                 }}
               >
-                Buy Now — ${product.price}
+                Buy Now — {formatPrice(product.price)}
               </motion.button>
             </div>
 

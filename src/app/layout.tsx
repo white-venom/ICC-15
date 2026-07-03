@@ -33,6 +33,7 @@ import { AppProvider } from "@/context/AppContext";
 import NavbarWrapper from "@/components/NavbarWrapper";
 import Footer from "@/components/Footer";
 import CartWrapper from "@/components/CartWrapper";
+import FloatingSupport from "@/components/FloatingSupport";
 
 export default function RootLayout({
   children,
@@ -53,6 +54,7 @@ export default function RootLayout({
             </main>
             <Footer />
             <CartWrapper />
+            <FloatingSupport />
           </SmoothScroll>
         </AppProvider>
       </body>

@@ -19,6 +19,9 @@ interface AppContextType {
   addToCart: (item: Omit<CartItem, 'quantity' | 'id'> & { id: string }) => void;
   removeFromCart: (id: string) => void;
   clearCart: () => void;
+  country: string;
+  setCountry: (country: string) => void;
+  formatPrice: (price: number) => string;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -26,6 +29,17 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
+  const [country, setCountry] = useState('US');
+
+  const formatPrice = (price: number) => {
+    switch (country) {
+      case 'UK': return `£${Math.round(price * 0.79)}`;
+      case 'DUBAI': return `${Math.round(price * 3.67)} AED`;
+      case 'INDIA': return `₹${Math.round(price * 83).toLocaleString('en-IN')}`;
+      case 'US':
+      default: return `$${price}`;
+    }
+  };
 
   const addToCart = (item: Omit<CartItem, 'quantity' | 'id'> & { id: string }) => {
     setCartItems((prev) => {
@@ -54,6 +68,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         addToCart,
         removeFromCart,
         clearCart,
+        country,
+        setCountry,
+        formatPrice,
       }}
     >
       {children}

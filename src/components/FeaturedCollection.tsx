@@ -50,7 +50,7 @@ const FEATURED = [
 
 export default function FeaturedCollection() {
   const router = useRouter();
-  const { addToCart, setCartOpen } = useAppContext();
+  const { addToCart, setCartOpen, formatPrice } = useAppContext();
 
   const handleQuickAdd = (p: typeof FEATURED[0]) => {
     addToCart({
@@ -142,7 +142,7 @@ export default function FeaturedCollection() {
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <span className="text-[8px] uppercase tracking-[0.4em] text-ivory/30 font-sans">{product.colorName}</span>
-                    <span className="font-serif text-lg text-gold font-light">${product.price}</span>
+                    <span className="font-serif text-lg text-gold font-light">{formatPrice(product.price)}</span>
                   </div>
                   <h3 className="font-serif text-lg font-light text-ivory leading-tight group-hover:text-gold transition-colors duration-300">{product.name}</h3>
                   <p className="font-serif italic text-xs font-light mt-0.5 text-ivory/55">

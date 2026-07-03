@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Trash2, ArrowRight } from 'lucide-react';
+import { useAppContext } from '@/context/AppContext';
 
 interface CartItem {
   id: string;
@@ -29,6 +30,7 @@ export default function Cart({
   onRemoveItem,
   onCheckout,
 }: CartProps) {
+  const { formatPrice } = useAppContext();
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
@@ -125,7 +127,7 @@ export default function Cart({
                         <span>Qty: {item.quantity}</span>
                       </div>
                       <span className="font-serif text-xs text-gold mt-1">
-                        ${item.price} USD
+                        {formatPrice(item.price)}
                       </span>
                     </div>
 
@@ -149,7 +151,7 @@ export default function Cart({
                 <div className="flex items-center justify-between font-serif">
                   <span className="text-sm tracking-wider text-ivory/60">Subtotal</span>
                   <span className="text-lg tracking-widest text-gold font-light">
-                    ${subtotal} USD
+                    {formatPrice(subtotal)}
                   </span>
                 </div>
                 
