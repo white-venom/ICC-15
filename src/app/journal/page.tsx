@@ -99,6 +99,7 @@ export default function JournalPage() {
     : ['All', 'Sartorial Art', 'Textile Science', 'Executive Style'];
 
   const [selectedCategory, setSelectedCategory] = useState<string>(categories[0]);
+  const [activePost, setActivePost] = useState<BlogPost | null>(null);
 
   const mapCategoryToKey = (cat: string) => {
     if (isArabic) {
