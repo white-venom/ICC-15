@@ -5,15 +5,16 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { type LucideIcon, Star, ArrowRight, Flame, Sparkles, Crown, LayoutGrid } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
+import { TRANSLATIONS } from '@/utils/translations';
 
 const PRODUCTS = [
   {
     id: 'white',
-    name: 'The Ivory Signature',
+    nameKey: 'The Ivory Signature',
     price: 195,
-    colorName: 'Ivory White',
-    tagline: 'Absolute Purity. Absolute Power.',
-    badge: 'Best Seller',
+    colorNameKey: 'Ivory White',
+    taglineKey: 'Absolute Purity. Absolute Power.',
+    badgeKey: 'bestSellerBadge',
     section: 'bestseller',
     rating: 4.9,
     reviews: 128,
@@ -23,11 +24,11 @@ const PRODUCTS = [
   },
   {
     id: 'black',
-    name: 'The Onyx Statement',
+    nameKey: 'The Onyx Statement',
     price: 220,
-    colorName: 'Jet Black',
-    tagline: 'Quiet Authority. Loud Presence.',
-    badge: 'New Arrival',
+    colorNameKey: 'Jet Black',
+    taglineKey: 'Quiet Authority. Loud Presence.',
+    badgeKey: 'newArrivalBadge',
     section: 'newarrival',
     rating: 4.8,
     reviews: 94,
@@ -37,11 +38,11 @@ const PRODUCTS = [
   },
   {
     id: 'blue',
-    name: 'The Royal Ceremony',
+    nameKey: 'The Royal Ceremony',
     price: 210,
-    colorName: 'Royal Blue',
-    tagline: 'Born For The Occasion.',
-    badge: 'Limited Edition',
+    colorNameKey: 'Royal Blue',
+    taglineKey: 'Born For The Occasion.',
+    badgeKey: 'limitedBadge',
     section: 'limited',
     rating: 5.0,
     reviews: 67,
@@ -54,7 +55,39 @@ const PRODUCTS = [
 /* ── Compact card — same design across every section ───── */
 function ProductCard({ product, idx }: { product: (typeof PRODUCTS)[0]; idx: number }) {
   const router = useRouter();
-  const { formatPrice } = useAppContext();
+  const { formatPrice, country } = useAppContext();
+  const isArabic = country === 'DUBAI';
+  const t = isArabic ? TRANSLATIONS.ar : TRANSLATIONS.en;
+
+  const getTranslatedProduct = () => {
+    switch (product.id) {
+      case 'white':
+        return {
+          name: isArabic ? 'العضوية العاجية' : 'The Ivory Signature',
+          colorName: isArabic ? 'أبيض عاجي' : 'Ivory White',
+          tagline: isArabic ? 'طهارة مطلقة. قوة كاملة.' : 'Absolute Purity. Absolute Power.',
+          badge: t.bestSellerBadge,
+        };
+      case 'black':
+        return {
+          name: isArabic ? 'بيان أونيكس' : 'The Onyx Statement',
+          colorName: isArabic ? 'أسود حالك' : 'Jet Black',
+          tagline: isArabic ? 'هيبة هادئة. حضور بارز.' : 'Quiet Authority. Loud Presence.',
+          badge: t.newArrivalBadge,
+        };
+      case 'blue':
+      default:
+        return {
+          name: isArabic ? 'المراسم الملكية' : 'The Royal Ceremony',
+          colorName: isArabic ? 'أزرق ملكي' : 'Royal Blue',
+          tagline: isArabic ? 'وُلِد من أجل المناسبات العظيمة.' : 'Born For The Occasion.',
+          badge: t.limitedBadge,
+        };
+    }
+  };
+
+  const details = getTranslatedProduct();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 40 }}
@@ -73,18 +106,18 @@ function ProductCard({ product, idx }: { product: (typeof PRODUCTS)[0]; idx: num
         <div className={`absolute inset-0 bg-gradient-to-b ${product.gradient}`} />
 
         {/* Badge */}
-        <div className="absolute top-5 left-5 z-10">
+        <div className={`absolute top-5 ${isArabic ? 'right-5' : 'left-5'} z-10`}>
           <span
-            className="px-3 py-1 text-[8px] uppercase tracking-[0.3em] font-sans border rounded-full"
+            className="px-3 py-1 text-[8px] uppercase tracking-[0.3em] font-sans border rounded-full bg-black/40 backdrop-blur-sm"
             style={{ borderColor: product.accent + '55', color: product.accent }}
           >
-            {product.badge}
+            {details.badge}
           </span>
         </div>
 
         {/* Index number watermark */}
         <div
-          className="absolute top-5 right-5 font-serif text-6xl font-bold leading-none select-none pointer-events-none z-10"
+          className={`absolute top-5 ${isArabic ? 'left-5' : 'right-5'} font-serif text-6xl font-bold leading-none select-none pointer-events-none z-10`}
           style={{ color: product.accent + '08', WebkitTextStroke: `1px ${product.accent}15` }}
         >
           0{idx + 1}
@@ -93,25 +126,25 @@ function ProductCard({ product, idx }: { product: (typeof PRODUCTS)[0]; idx: num
         {/* Shirt Image */}
         <img
           src={product.image}
-          alt={product.name}
+          alt={details.name}
           className="absolute inset-0 w-full h-full object-contain object-center p-8 transition-transform duration-700 group-hover:scale-105 mix-blend-luminosity opacity-90 z-10"
         />
 
         {/* Bottom info bar */}
         <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent p-5 z-20 translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
-          <div className="flex items-end justify-between">
-            <div>
-              <div className="flex items-center gap-1.5 mb-1">
+          <div className={`flex items-end justify-between ${isArabic ? 'flex-row-reverse' : ''}`}>
+            <div className={isArabic ? 'text-right' : 'text-left'}>
+              <div className={`flex items-center gap-1.5 mb-1 ${isArabic ? 'flex-row-reverse' : ''}`}>
                 <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: product.accent }} />
-                <span className="text-[9px] uppercase tracking-[0.3em] text-ivory/50 font-sans">{product.colorName}</span>
+                <span className="text-[9px] uppercase tracking-[0.3em] text-ivory/50 font-sans">{details.colorName}</span>
               </div>
-              <div className="flex items-center gap-1">
+              <div className={`flex items-center gap-1 ${isArabic ? 'flex-row-reverse' : ''}`}>
                 <Star size={9} className="text-gold fill-gold" />
                 <span className="text-[9px] text-ivory/60 font-sans">{product.rating} ({product.reviews})</span>
               </div>
             </div>
             <div
-              className="w-8 h-8 rounded-full flex items-center justify-center border opacity-0 group-hover:opacity-100 transition-all duration-500"
+              className={`w-8 h-8 rounded-full flex items-center justify-center border opacity-0 group-hover:opacity-100 transition-all duration-500 ${isArabic ? 'rotate-180' : ''}`}
               style={{ borderColor: product.accent + '60', color: product.accent }}
             >
               <ArrowRight size={14} />
@@ -121,12 +154,12 @@ function ProductCard({ product, idx }: { product: (typeof PRODUCTS)[0]; idx: num
       </div>
 
       {/* Caption */}
-      <div className="mt-4 px-1">
+      <div className={`mt-4 px-1 ${isArabic ? 'text-right' : 'text-left'}`}>
         <h3 className="font-serif text-xl font-light text-white uppercase tracking-wide group-hover:text-gold transition-colors duration-300">
-          {product.name}
+          {details.name}
         </h3>
-        <div className="flex items-center justify-between mt-1">
-          <p className="font-serif italic text-sm text-ivory/40 font-light">{product.tagline}</p>
+        <div className={`flex items-center justify-between mt-1 ${isArabic ? 'flex-row-reverse' : ''}`}>
+          <p className="font-serif italic text-sm text-ivory/40 font-light">{details.tagline}</p>
           <span className="font-serif text-lg font-light" style={{ color: product.accent }}>{formatPrice(product.price)}</span>
         </div>
       </div>
@@ -140,14 +173,16 @@ function SectionHeading({
   label,
   title,
   accent,
+  isArabic,
 }: {
   icon: LucideIcon;
   label: string;
   title: string;
   accent: string;
+  isArabic: boolean;
 }) {
   return (
-    <div className="flex items-center gap-4 mb-8">
+    <div className={`flex items-center gap-4 mb-8 ${isArabic ? 'flex-row-reverse' : ''}`}>
       <Icon size={14} style={{ color: accent }} />
       <span className="text-[9px] uppercase tracking-[0.5em] font-sans" style={{ color: accent }}>
         {label}
@@ -155,7 +190,7 @@ function SectionHeading({
       <h2 className="font-serif text-xl font-light uppercase tracking-widest text-white">
         {title}
       </h2>
-      <span className="flex-1 h-px" style={{ background: `linear-gradient(to right, ${accent}30, transparent)` }} />
+      <span className="flex-1 h-px" style={{ background: isArabic ? `linear-gradient(to left, ${accent}30, transparent)` : `linear-gradient(to right, ${accent}30, transparent)` }} />
     </div>
   );
 }
@@ -163,23 +198,27 @@ function SectionHeading({
 /* ── Main page ───────────────────────────────────────────── */
 export default function CollectionPage() {
   const router = useRouter();
+  const { country } = useAppContext();
+  const isArabic = country === 'DUBAI';
+  const t = isArabic ? TRANSLATIONS.ar : TRANSLATIONS.en;
+  
   const [activeTab, setActiveTab] = useState<'all' | 'bestseller' | 'newarrival' | 'limited'>('all');
 
   const tabs = [
-    { key: 'all',        label: 'All',            icon: LayoutGrid, accent: '#888888' },
-    { key: 'bestseller', label: 'Best Sellers',   icon: Flame,      accent: '#d4af37' },
-    { key: 'newarrival', label: 'New Arrivals',   icon: Sparkles,   accent: '#c0c0c0' },
-    { key: 'limited',    label: 'Limited Series', icon: Crown,      accent: '#4a7fc1' },
+    { key: 'all',        label: t.filterAll,       icon: LayoutGrid, accent: '#888888' },
+    { key: 'bestseller', label: t.filterBestSeller, icon: Flame,      accent: '#d4af37' },
+    { key: 'newarrival', label: t.filterNewArrival, icon: Sparkles,   accent: '#c0c0c0' },
+    { key: 'limited',    label: t.filterLimited,    icon: Crown,      accent: '#4a7fc1' },
   ] as const;
 
   const sections = [
-    { key: 'bestseller', label: 'Most Loved',    title: 'Best Sellers',   icon: Flame,    accent: '#d4af37' },
-    { key: 'newarrival', label: 'Just Landed',   title: 'New Arrivals',   icon: Sparkles, accent: '#c0c0c0' },
-    { key: 'limited',    label: 'Exclusive Drop', title: 'Limited Series', icon: Crown,    accent: '#4a7fc1' },
+    { key: 'bestseller', label: isArabic ? 'الأكثر عشقاً' : 'Most Loved',    title: t.filterBestSeller, icon: Flame,    accent: '#d4af37' },
+    { key: 'newarrival', label: isArabic ? 'وصل حديثاً' : 'Just Landed',     title: t.filterNewArrival, icon: Sparkles, accent: '#c0c0c0' },
+    { key: 'limited',    label: isArabic ? 'إصدار محدود' : 'Exclusive Drop', title: t.filterLimited,    icon: Crown,    accent: '#4a7fc1' },
   ] as const;
 
   return (
-    <div className="min-h-screen bg-[#050505] text-ivory">
+    <div className="min-h-screen bg-[#050505] text-ivory" dir={isArabic ? 'rtl' : 'ltr'}>
 
       {/* ── PAGE HEADER ───────────────────────────── */}
       <div className="pt-28 pb-12 px-6 md:px-16 border-b border-white/5">
@@ -189,14 +228,14 @@ export default function CollectionPage() {
           transition={{ duration: 0.8 }}
           className="max-w-7xl mx-auto"
         >
-          <p className="text-[9px] uppercase tracking-[0.5em] text-gold font-sans mb-3 flex items-center gap-3">
-            <span className="w-8 h-px bg-gold inline-block" /> Signature Collection 2026
+          <p className={`text-[9px] uppercase tracking-[0.5em] text-gold font-sans mb-3 flex items-center gap-3 ${isArabic ? 'flex-row-reverse justify-start' : ''}`}>
+            <span className="w-8 h-px bg-gold inline-block" /> {isArabic ? 'سجل التوقيعات ٢٠٢٦' : 'Signature Collection 2026'}
           </p>
-          <h1 className="font-serif text-4xl md:text-6xl font-light uppercase leading-tight tracking-wide text-white mb-4">
-            The Gallery
+          <h1 className={`font-serif text-4xl md:text-6xl font-light uppercase leading-tight tracking-wide text-white mb-4 ${isArabic ? 'text-right' : ''}`}>
+            {isArabic ? 'المعرض الرقمي' : 'The Gallery'}
           </h1>
-          <p className="text-xs font-sans text-ivory/40 uppercase tracking-[0.25em] max-w-md leading-relaxed">
-            Three signatures. Each made to order within 14 working days — crafted exclusively for you.
+          <p className={`text-xs font-sans text-ivory/40 uppercase tracking-[0.25em] max-w-md leading-relaxed ${isArabic ? 'text-right' : ''}`}>
+            {isArabic ? 'ثلاثة قمصان مميزة. كل قطعة تُصنع خصيصاً لك عند الطلب خلال ١٤ يوم عمل.' : 'Three signatures. Each made to order within 14 working days — crafted exclusively for you.'}
           </p>
         </motion.div>
       </div>
@@ -204,7 +243,7 @@ export default function CollectionPage() {
       {/* ── TAB NAV ───────────────────────────────── */}
       <div className="sticky top-0 z-30 bg-[#050505]/90 backdrop-blur-md border-b border-white/5">
         <div className="max-w-7xl mx-auto px-6 md:px-16">
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-4">
+          <div className={`flex items-center gap-2 overflow-x-auto scrollbar-none py-4 ${isArabic ? 'flex-row-reverse' : ''}`}>
             {tabs.map(({ key, label, icon: TabIcon, accent }) => {
               const isActive = activeTab === key;
               return (
@@ -237,7 +276,7 @@ export default function CollectionPage() {
               const items = PRODUCTS.filter((p) => p.section === sec.key);
               return (
                 <section key={sec.key}>
-                  <SectionHeading icon={sec.icon} label={sec.label} title={sec.title} accent={sec.accent} />
+                  <SectionHeading icon={sec.icon} label={sec.label} title={sec.title} accent={sec.accent} isArabic={isArabic} />
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
                     {items.map((product, idx) => (
                       <ProductCard key={product.id} product={product} idx={idx} />
@@ -254,7 +293,7 @@ export default function CollectionPage() {
               const items = PRODUCTS.filter((p) => p.section === sec.key);
               return (
                 <section key={sec.key} className="border-b border-white/5 pb-14">
-                  <SectionHeading icon={sec.icon} label={sec.label} title={sec.title} accent={sec.accent} />
+                  <SectionHeading icon={sec.icon} label={sec.label} title={sec.title} accent={sec.accent} isArabic={isArabic} />
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
                     {items.map((product, idx) => (
                       <ProductCard key={product.id} product={product} idx={idx} />
@@ -266,7 +305,7 @@ export default function CollectionPage() {
 
             {/* All products grid at the bottom */}
             <section>
-              <SectionHeading icon={LayoutGrid} label="Complete Range" title="All Pieces" accent="#888" />
+              <SectionHeading icon={LayoutGrid} label={isArabic ? 'النطاق الكامل' : 'Complete Range'} title={isArabic ? 'كل القطع الفنية' : 'All Pieces'} accent="#888" isArabic={isArabic} />
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
                 {PRODUCTS.map((product, idx) => (
                   <ProductCard key={product.id} product={product} idx={idx} />
@@ -279,15 +318,15 @@ export default function CollectionPage() {
 
       {/* ── BOTTOM STRIP ──────────────────────────── */}
       <div className="border-t border-white/5 px-6 md:px-16 py-10">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className={`max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 ${isArabic ? 'md:flex-row-reverse' : ''}`}>
           <p className="font-serif text-base md:text-lg font-light text-ivory/50 italic">
-            "Every shirt tells a story. Make yours unforgettable."
+            {isArabic ? '"كل قميص يروي قصة. اجعل قصتك لا تُنسى."' : '"Every shirt tells a story. Make yours unforgettable."'}
           </p>
           <button
             onClick={() => router.push('/')}
-            className="text-[9px] uppercase tracking-[0.35em] text-gold hover:text-ivory transition-colors duration-300 font-sans flex items-center gap-2"
+            className={`text-[9px] uppercase tracking-[0.35em] text-gold hover:text-ivory transition-colors duration-300 font-sans flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}
           >
-            Back to Home <ArrowRight size={10} />
+            {isArabic ? 'العودة للرئيسية' : 'Back to Home'} <ArrowRight size={10} className={isArabic ? 'rotate-180' : ''} />
           </button>
         </div>
       </div>

@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { ShoppingBag, Menu, X, ChevronDown } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
+import { TRANSLATIONS } from '@/utils/translations';
 
 interface NavbarProps {
   cartCount: number;
@@ -23,6 +24,19 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
   const [logoHovered, setLogoHovered]   = useState(false);
   const [countryOpen, setCountryOpen]   = useState(false);
   const { country, setCountry }         = useAppContext();
+
+  const isArabic = country === 'DUBAI';
+  const t = isArabic ? TRANSLATIONS.ar : TRANSLATIONS.en;
+
+  const getTranslatedItem = (item: string) => {
+    switch (item.toLowerCase()) {
+      case 'home': return t.navHome;
+      case 'collection': return t.navCollection;
+      case 'craftsmanship': return t.navCraftsmanship;
+      case 'journal': return t.navJournal;
+      default: return item;
+    }
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 80);
@@ -50,6 +64,7 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
     <>
       {/* ─── SINGLE NAVBAR ─────────────────────── */}
       <header
+        dir={isArabic ? 'rtl' : 'ltr'}
         className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 md:px-16 pointer-events-auto transition-all duration-300 border-b ${
           scrolled 
             ? 'h-14 bg-black/70 backdrop-blur-md border-white/[0.06] shadow-lg' 
@@ -58,7 +73,7 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
       >
         {/* Logo + name (slim) */}
         <div
-          className="flex items-center gap-4 cursor-pointer group"
+          className={`flex items-center gap-4 cursor-pointer group ${isArabic ? 'flex-row-reverse' : ''}`}
           onClick={() => go('hero')}
           onMouseEnter={() => setLogoHovered(true)}
           onMouseLeave={() => setLogoHovered(false)}
@@ -83,8 +98,8 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
             )}
           </div>
           <div className="flex flex-col items-center leading-none">
-            <span className="font-serif tracking-[0.2em] text-sm uppercase text-white group-hover:text-gold transition-colors duration-300">INK &amp; COTTON CLUB</span>
-            <span className="font-sans tracking-[0.3em] text-[8px] font-bold uppercase text-gold/70 mt-1">TAILORED ESSENTIALS</span>
+            <span className="font-serif tracking-[0.2em] text-sm uppercase text-white group-hover:text-gold transition-colors duration-300">{t.navTitle}</span>
+            <span className="font-sans tracking-[0.3em] text-[8px] font-bold uppercase text-gold/70 mt-1">{t.navSubtitle}</span>
           </div>
         </div>
 
@@ -92,13 +107,13 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
         <nav className="hidden md:flex items-center gap-10">
           {[...NAV_LEFT, ...NAV_RIGHT].map((item) => (
             <button key={item} onClick={() => go(item.toLowerCase())} className={linkCls} data-cursor="button">
-              {item}{underline}
+              {getTranslatedItem(item)}{underline}
             </button>
           ))}
         </nav>
 
         {/* Right CTA */}
-        <div className="flex items-center gap-6">
+        <div className={`flex items-center gap-6 ${isArabic ? 'flex-row-reverse' : ''}`}>
           {/* Country Selector */}
           <div className="relative hidden sm:block">
             <button 
@@ -113,13 +128,13 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
                   initial={{ opacity: 0, y: 10 }} 
                   animate={{ opacity: 1, y: 0 }} 
                   exit={{ opacity: 0, y: 10 }}
-                  className="absolute top-full right-0 mt-6 w-28 bg-[#080808] border border-white/10 rounded-sm flex flex-col overflow-hidden shadow-2xl"
+                  className={`absolute top-full mt-6 w-28 bg-[#080808] border border-white/10 rounded-sm flex flex-col overflow-hidden shadow-2xl ${isArabic ? 'left-0' : 'right-0'}`}
                 >
                   {['DUBAI', 'INDIA', 'UK', 'US'].map((c) => (
                     <button 
                       key={c}
                       onClick={() => { setCountry(c); setCountryOpen(false); }}
-                      className={`text-[10px] uppercase tracking-widest text-left px-4 py-3 hover:bg-white/5 transition-colors duration-200 ${country === c ? 'text-gold' : 'text-white/70'}`}
+                      className={`text-[10px] uppercase tracking-widest px-4 py-3 hover:bg-white/5 transition-colors duration-200 ${isArabic ? 'text-right' : 'text-left'} ${country === c ? 'text-gold' : 'text-white/70'}`}
                     >
                       {c}
                     </button>
@@ -130,7 +145,7 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
           </div>
 
           <button onClick={() => go('collection')} className="hidden sm:block px-5 py-2 text-[11px] uppercase tracking-[0.25em] border border-gold/40 text-gold hover:bg-gold hover:text-black font-semibold transition-all duration-300 rounded-sm">
-            Order Now
+            {t.navOrderNow}
           </button>
           <button onClick={onCartClick} className="relative text-white/70 hover:text-gold transition-colors duration-300">
             <ShoppingBag size={18} />
@@ -162,12 +177,12 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
             {[...NAV_LEFT, ...NAV_RIGHT].map((item) => (
               <button key={item} onClick={() => go(item.toLowerCase())}
                 className="text-[11px] uppercase tracking-[0.25em] font-sans text-white/70 hover:text-gold py-2 w-full text-center border-b border-white/[0.04] transition-colors duration-300">
-                {item}
+                {getTranslatedItem(item)}
               </button>
             ))}
             <button onClick={() => go('collection')}
               className="w-full py-3 text-center text-[10px] uppercase tracking-[0.25em] bg-gold text-black font-semibold rounded-sm hover:bg-white transition-colors duration-300">
-              Order Now
+              {t.navOrderNow}
             </button>
           </motion.div>
         )}

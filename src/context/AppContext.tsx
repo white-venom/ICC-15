@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 export interface CartItem {
   id: string;
@@ -30,6 +30,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [country, setCountry] = useState('US');
+
+  useEffect(() => {
+    const isArabic = country === 'DUBAI';
+    document.documentElement.dir = isArabic ? 'rtl' : 'ltr';
+    document.documentElement.lang = isArabic ? 'ar' : 'en';
+  }, [country]);
 
   const formatPrice = (price: number) => {
     switch (country) {

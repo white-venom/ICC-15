@@ -4,11 +4,16 @@ import React, { useState } from 'react';
 import { Mail, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useAppContext } from '@/context/AppContext';
+import { TRANSLATIONS } from '@/utils/translations';
 
 export default function Footer() {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
   const [logoError, setLogoError] = useState(false);
+  const { country } = useAppContext();
+  const isArabic = country === 'DUBAI';
+  const t = isArabic ? TRANSLATIONS.ar : TRANSLATIONS.en;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,7 +24,7 @@ export default function Footer() {
   };
 
   return (
-    <footer className="relative bg-matte-black text-ivory/80 pt-12 pb-8 px-6 md:px-12 border-t border-white/15 overflow-hidden z-10">
+    <footer dir={isArabic ? 'rtl' : 'ltr'} className="relative bg-matte-black text-ivory/80 pt-12 pb-8 px-6 md:px-12 border-t border-white/15 overflow-hidden z-10">
       {/* Background soft ambient light */}
       <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-gold/5 blur-[120px] rounded-full pointer-events-none" />
       
@@ -36,7 +41,7 @@ export default function Footer() {
             />
           </div>
           <p className="-mt-8 font-serif text-base font-light italic leading-relaxed text-ivory/60 max-w-sm text-center">
-            &ldquo;Confidence is not loud. Elegance is not self-asserting. It is the silent presence defined by every thread.&rdquo;
+            {t.footerQuote}
           </p>
           <div className="flex gap-4 mt-2 justify-center">
             <a
@@ -75,30 +80,30 @@ export default function Footer() {
         {/* Brand Navigation */}
         <div className="flex flex-col gap-4 md:pl-4">
           <h3 className="text-[11px] uppercase tracking-[0.2em] font-sans font-semibold text-gold">
-            Explore
+            {t.footerExplore}
           </h3>
           <ul className="flex flex-col items-start gap-0">
             <li>
               <Link href="/" className="relative group overflow-hidden inline-block" data-cursor="button">
-                <span className="relative z-10 text-[10px] uppercase tracking-widest text-ivory/70 group-hover:text-white transition-colors duration-300 font-sans">Home</span>
+                <span className="relative z-10 text-[10px] uppercase tracking-widest text-ivory/70 group-hover:text-white transition-colors duration-300 font-sans">{t.navHome}</span>
                 <span className="absolute bottom-0 left-0 w-0 h-px bg-gold group-hover:w-full transition-all duration-300 ease-out" />
               </Link>
             </li>
             <li>
               <Link href="/collection" className="relative group overflow-hidden inline-block" data-cursor="button">
-                <span className="relative z-10 text-[10px] uppercase tracking-widest text-ivory/70 group-hover:text-white transition-colors duration-300 font-sans">Collection</span>
+                <span className="relative z-10 text-[10px] uppercase tracking-widest text-ivory/70 group-hover:text-white transition-colors duration-300 font-sans">{t.navCollection}</span>
                 <span className="absolute bottom-0 left-0 w-0 h-px bg-gold group-hover:w-full transition-all duration-300 ease-out" />
               </Link>
             </li>
             <li>
               <Link href="/craftsmanship" className="relative group overflow-hidden inline-block" data-cursor="button">
-                <span className="relative z-10 text-[10px] uppercase tracking-widest text-ivory/70 group-hover:text-white transition-colors duration-300 font-sans">Craftsmanship</span>
+                <span className="relative z-10 text-[10px] uppercase tracking-widest text-ivory/70 group-hover:text-white transition-colors duration-300 font-sans">{t.navCraftsmanship}</span>
                 <span className="absolute bottom-0 left-0 w-0 h-px bg-gold group-hover:w-full transition-all duration-300 ease-out" />
               </Link>
             </li>
             <li>
               <Link href="/journal" className="relative group overflow-hidden inline-block" data-cursor="button">
-                <span className="relative z-10 text-[10px] uppercase tracking-widest text-ivory/70 group-hover:text-white transition-colors duration-300 font-sans">Journal</span>
+                <span className="relative z-10 text-[10px] uppercase tracking-widest text-ivory/70 group-hover:text-white transition-colors duration-300 font-sans">{t.navJournal}</span>
                 <span className="absolute bottom-0 left-0 w-0 h-px bg-gold group-hover:w-full transition-all duration-300 ease-out" />
               </Link>
             </li>
@@ -108,11 +113,10 @@ export default function Footer() {
         {/* Contact Details & Atelier Address */}
         <div className="flex flex-col gap-4">
           <h3 className="text-[11px] uppercase tracking-[0.2em] font-sans font-semibold text-gold">
-            Contact
+            {t.footerContact}
           </h3>
-          <p className="text-xs font-light text-ivory/60 leading-relaxed">
-            Atelier 109, Rue Saint-Honoré<br />
-            75001 Paris, France
+          <p className="text-xs font-light text-ivory/60 leading-relaxed whitespace-pre-line">
+            {t.footerAddress}
           </p>
           <div className="h-px bg-white/5 my-1" />
           <p className="text-[11px] font-light text-ivory/50 leading-relaxed">
@@ -124,16 +128,16 @@ export default function Footer() {
         {/* Newsletter Editorial */}
         <div className="flex flex-col gap-4">
           <h3 className="text-[11px] uppercase tracking-[0.2em] font-sans font-semibold text-gold">
-            Subscribe
+            {t.footerSubscribe}
           </h3>
           <p className="text-xs font-light text-ivory/50 leading-relaxed">
-            Subscribe to receive exclusive release announcements.
+            {t.footerSubscribeDesc}
           </p>
           {!subscribed ? (
             <form onSubmit={handleSubmit} className="relative mt-2 border-b border-white/10 focus-within:border-gold transition-colors duration-300">
               <input
                 type="email"
-                placeholder="Enter your email"
+                placeholder={t.footerEmailPlaceholder}
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -141,7 +145,7 @@ export default function Footer() {
               />
               <button
                 type="submit"
-                className="absolute right-0 top-1/2 -translate-y-1/2 p-2 text-white/50 hover:text-gold hover:translate-x-1 transition-all duration-300"
+                className={`absolute ${isArabic ? 'left-0' : 'right-0'} top-1/2 -translate-y-1/2 p-2 text-white/50 hover:text-gold transition-all duration-300 ${isArabic ? '-scale-x-100 hover:-translate-x-1' : 'hover:translate-x-1'}`}
                 aria-label="Submit newsletter form"
                 data-cursor="button"
               >
@@ -150,26 +154,24 @@ export default function Footer() {
             </form>
           ) : (
             <p className="text-xs text-gold italic mt-2 animate-pulse-slow">
-              Thank you. You are added to the list.
+              {t.footerSuccessMsg}
             </p>
           )}
         </div>
       </div>
 
-
-
       {/* Footer Bottom Rights */}
-      <div className="max-w-7xl mx-auto pt-6 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6 text-xs uppercase tracking-[0.15em] text-ivory/40">
+      <div className={`max-w-7xl mx-auto pt-6 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6 text-xs uppercase tracking-[0.15em] text-ivory/40 ${isArabic ? 'md:flex-row-reverse' : ''}`}>
         <div>
-          &copy; {new Date().getFullYear()} Ink &amp; Cotton Club. All Rights Reserved.
+          {t.footerCopyright}
         </div>
 
         <div className="flex gap-6">
           <a href="#" className="hover:text-gold transition-colors duration-300">
-            Privacy Policy
+            {t.footerPrivacy}
           </a>
           <a href="#" className="hover:text-gold transition-colors duration-300">
-            Terms of Service
+            {t.footerTerms}
           </a>
         </div>
       </div>

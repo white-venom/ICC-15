@@ -4,6 +4,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Trash2, ArrowRight } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
+import { TRANSLATIONS } from '@/utils/translations';
 
 interface CartItem {
   id: string;
@@ -30,7 +31,9 @@ export default function Cart({
   onRemoveItem,
   onCheckout,
 }: CartProps) {
-  const { formatPrice } = useAppContext();
+  const { formatPrice, country } = useAppContext();
+  const isArabic = country === 'DUBAI';
+  const t = isArabic ? TRANSLATIONS.ar : TRANSLATIONS.en;
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
@@ -48,20 +51,21 @@ export default function Cart({
 
           {/* Cart Panel Drawer */}
           <motion.div
-            initial={{ x: '100%' }}
+            initial={{ x: isArabic ? '-100%' : '100%' }}
             animate={{ x: 0 }}
-            exit={{ x: '100%' }}
+            exit={{ x: isArabic ? '-100%' : '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 bottom-0 w-full sm:w-[450px] z-50 glass border-l border-white/5 flex flex-col shadow-2xl"
+            dir={isArabic ? 'rtl' : 'ltr'}
+            className={`fixed ${isArabic ? 'left-0' : 'right-0'} top-0 bottom-0 w-full sm:w-[450px] z-50 glass border-r border-white/5 flex flex-col shadow-2xl`}
           >
             {/* Cart Header */}
             <div className="p-8 border-b border-white/5 flex items-center justify-between">
               <div className="flex flex-col">
                 <h3 className="font-serif text-xl tracking-[0.2em] text-ivory uppercase">
-                  Your Collection
+                  {t.cartTitle}
                 </h3>
                 <span className="text-[9px] uppercase tracking-[0.2em] text-gold mt-1">
-                  Signature Shirts
+                  {t.cartSubtitle}
                 </span>
               </div>
               <button
@@ -78,13 +82,13 @@ export default function Cart({
               {items.length === 0 ? (
                 <div className="flex-1 flex flex-col items-center justify-center text-center gap-4">
                   <p className="font-serif text-sm italic text-ivory/40">
-                    &ldquo;The drawer is currently empty. True confidence awaits selection.&rdquo;
+                    {t.cartEmpty}
                   </p>
                   <button
                     onClick={onClose}
                     className="text-[10px] uppercase tracking-[0.2em] text-gold border-b border-gold/30 hover:border-gold hover:pb-1 transition-all duration-300"
                   >
-                    Return to Collection
+                    {t.cartReturn}
                   </button>
                 </div>
               ) : (
@@ -97,7 +101,7 @@ export default function Cart({
                     exit={{ opacity: 0, scale: 0.95 }}
                     className="flex gap-5 pb-6 border-b border-white/5 items-start"
                   >
-                    {/* Item Swatch/Color details instead of boring standard placeholder images */}
+                    {/* Item Swatch */}
                     <div
                       className={`w-16 h-20 rounded-lg flex items-center justify-center border border-white/10 ${
                         item.colorName === 'Jet Black'
@@ -112,22 +116,22 @@ export default function Cart({
                           item.colorName === 'Ivory White' ? 'text-matte-black' : 'text-ivory'
                         }`}
                       >
-                        {item.colorName.split(' ')[0]}
+                        {isArabic ? (item.colorName === 'Jet Black' ? 'أسود' : item.colorName === 'Royal Blue' ? 'أزرق' : 'أبيض') : item.colorName.split(' ')[0]}
                       </span>
                     </div>
 
                     {/* Item Details */}
                     <div className="flex-1 flex flex-col gap-1">
                       <h4 className="font-serif text-sm tracking-wider text-ivory">
-                        {item.name}
+                        {isArabic ? (item.name.includes('White') || item.name.includes('Ivory') ? 'العضوية العاجية' : item.name.includes('Onyx') || item.name.includes('Black') ? 'بيان أونيكس' : 'المراسم الملكية') : item.name}
                       </h4>
                       <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-ivory/50 uppercase tracking-widest">
-                        <span>Color: {item.colorName}</span>
-                        <span>Size: {item.size}</span>
-                        <span>Qty: {item.quantity}</span>
+                        <span>{t.cartColor}: {isArabic ? (item.colorName === 'Jet Black' ? 'أسود حالك' : item.colorName === 'Royal Blue' ? 'أزرق ملكي' : 'أبيض عاجي') : item.colorName}</span>
+                        <span>{t.cartSize}: {item.size}</span>
+                        <span>{t.cartQty}: {item.quantity}</span>
                       </div>
                       <span className="font-serif text-xs text-gold mt-1">
-                        {formatPrice(item.price)}
+                        {formatPrice(item.price * item.quantity)}
                       </span>
                     </div>
 
@@ -149,14 +153,14 @@ export default function Cart({
             {items.length > 0 && (
               <div className="p-8 border-t border-white/5 bg-matte-black/40 flex flex-col gap-6">
                 <div className="flex items-center justify-between font-serif">
-                  <span className="text-sm tracking-wider text-ivory/60">Subtotal</span>
+                  <span className="text-sm tracking-wider text-ivory/60">{t.cartSubtotal}</span>
                   <span className="text-lg tracking-widest text-gold font-light">
                     {formatPrice(subtotal)}
                   </span>
                 </div>
                 
                 <p className="text-[10px] text-ivory/40 uppercase tracking-wider leading-relaxed">
-                  Complimentary white-glove shipping &amp; custom-woven storage bag included.
+                  {t.cartNotice}
                 </p>
 
                 <div className="flex flex-col gap-3">
@@ -164,14 +168,14 @@ export default function Cart({
                     onClick={onCheckout}
                     className="w-full py-4 bg-gold text-matte-black font-semibold text-xs uppercase tracking-[0.25em] rounded-full flex items-center justify-center gap-2 hover:bg-ivory hover:text-matte-black transition-colors duration-350"
                   >
-                    Proceed to Checkout
-                    <ArrowRight size={14} />
+                    {t.cartCheckout}
+                    <ArrowRight size={14} className={isArabic ? 'rotate-180' : ''} />
                   </button>
                   <button
                     onClick={onClose}
                     className="w-full py-3 border border-white/10 text-ivory hover:border-gold hover:text-gold text-xs uppercase tracking-[0.2em] rounded-full transition-colors duration-300"
                   >
-                    Continue Exploring
+                    {t.cartContinue}
                   </button>
                 </div>
               </div>
