@@ -134,6 +134,19 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
     }
   };
 
+  const isArabic = country === 'DUBAI';
+  const t = isArabic ? TRANSLATIONS.ar : TRANSLATIONS.en;
+
+  const getTranslatedItem = (item: string) => {
+    switch (item.toLowerCase()) {
+      case 'home': return t.navHome;
+      case 'collection': return t.navCollection;
+      case 'craftsmanship': return t.navCraftsmanship;
+      case 'journal': return t.navJournal;
+      default: return item;
+    }
+  };
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 80);
     window.addEventListener('scroll', onScroll, { passive: true });
