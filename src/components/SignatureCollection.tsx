@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Sparkles, Check } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
 
 interface ShirtProduct {
   id: string;
@@ -18,68 +18,27 @@ interface ShirtProduct {
   accentColor: string;
   bgGradient: string;
   tagline: string;
+  section: string;
+  rating: number;
+  reviews: number;
+  accent: string;
+  gradient: string;
 }
 
 interface SignatureCollectionProps {
+  products: ShirtProduct[];
   onSectionChange: (section: string) => void;
   onFocusAreaChange: (area: 'all' | 'collar' | 'sleeve' | 'button') => void;
   onBuy: (product: ShirtProduct, size: string) => void;
 }
 
-const PRODUCTS: ShirtProduct[] = [
-  {
-    id: 'white',
-    name: 'The Ivory Signature',
-    price: 195,
-    colorName: 'Ivory White',
-    tagline: 'Absolute Purity. Absolute Power.',
-    story: 'Woven from 100% long-staple Giza cotton, it features a semi-spread collar, double-button mitred cuffs, and champagne-hued shell buttons. The definitive dress shirt.',
-    atmosphere: 'Ivory ambient lighting reflecting absolute purity and status.',
-    fitInfo: 'Tailored fit. Slim cut across the torso without tightening the chest. Designed to follow the natural lines of the shoulder.',
-    careInfo: 'Dry clean recommended. Hand wash cold using silk-detergent, iron damp on medium-high heat.',
-    testimonial: '"The collar holds its structure perfectly under a tux. Truly unmatched quality." — Julian V., Creative Director',
-    image: '/assets/shirt_white.png',
-    accentColor: 'rgba(255,255,240,0.6)',
-    bgGradient: 'from-[#1a1a18] to-[#0d0d0d]',
-  },
-  {
-    id: 'black',
-    name: 'The Onyx Statement',
-    price: 220,
-    colorName: 'Jet Black',
-    tagline: 'Quiet Authority. Loud Presence.',
-    story: 'Constructed using high-twist double-ply black yarns. The fabric undergoes an organic calendering process, providing a sophisticated matte-sheen texture that absorbs light beautifully.',
-    atmosphere: 'Dramatic spotlights creating high-contrast specular reflections.',
-    fitInfo: 'Classic tailored fit. Relaxed armholes with a tapered waist for a sharp, commanding posture.',
-    careInfo: 'Dry clean only to maintain the signature matte-sheen coating. Steam iron inside out.',
-    testimonial: '"An executive statement. The jet black color has a deep reflection I have never found elsewhere." — Arthur K., CEO',
-    image: '/assets/shirt_black.png',
-    accentColor: 'rgba(180,180,180,0.5)',
-    bgGradient: 'from-[#111111] to-[#080808]',
-  },
-  {
-    id: 'blue',
-    name: 'The Royal Ceremony',
-    price: 210,
-    colorName: 'Royal Blue',
-    tagline: 'Born for the Occasion.',
-    story: 'Woven with a micro-twill pattern that bounces light dynamically. The deep royal blue yarns are mercerized twice for maximum color depth and a luxurious, silk-like hand feel.',
-    atmosphere: 'Royal blue ambient wash for formal receptions and events.',
-    fitInfo: 'Bespoke fit. Slimmer sleeves and high armholes. Fits like a tailored glove for commanding presence.',
-    careInfo: 'Machine wash delicate, cold. Line dry in shade. Warm iron if necessary.',
-    testimonial: '"The fabric catches the light as you move. It is almost iridescent. Stunning." — Marcus L., Fashion Consultant',
-    image: '/assets/shirt_blue.png',
-    accentColor: 'rgba(80,120,220,0.6)',
-    bgGradient: 'from-[#0a0f1a] to-[#080808]',
-  },
-];
-
 const SIZES = ['38', '39', '40', '41', '42', '43'];
 
-export default function SignatureCollection({ onSectionChange, onFocusAreaChange, onBuy }: SignatureCollectionProps) {
-  const [selectedSizes, setSelectedSizes] = useState<Record<string, string>>({ white: '40', black: '40', blue: '40' });
-  const [activeTabs, setActiveTabs] = useState<Record<string, 'story' | 'fit' | 'care'>>({ white: 'story', black: 'story', blue: 'story' });
+export default function SignatureCollection({ products, onSectionChange, onFocusAreaChange, onBuy }: SignatureCollectionProps) {
+  const [selectedSizes, setSelectedSizes] = useState<Record<string, string>>({});
+  const [activeTabs, setActiveTabs] = useState<Record<string, 'story' | 'fit' | 'care'>>({});
   const [buyingId, setBuyingId] = useState<string | null>(null);
+  const [inventoryMap, setInventoryMap] = useState<Record<string, number>>({});
 
   const whiteRef = useRef(null);
   const blackRef = useRef(null);
@@ -94,6 +53,20 @@ export default function SignatureCollection({ onSectionChange, onFocusAreaChange
     else if (blackInView) onSectionChange('collection-black');
     else if (blueInView) onSectionChange('collection-blue');
   }, [whiteInView, blackInView, blueInView, onSectionChange]);
+
+  useEffect(() => {
+    fetch('/api/inventory')
+      .then((res) => res.json())
+      .then((data) => {
+        const map: Record<string, number> = {};
+        data.forEach((inv: any) => {
+          const key = `${inv.productId}-${inv.size}-${inv.colorName}`;
+          map[key] = inv.stock;
+        });
+        setInventoryMap(map);
+      })
+      .catch((err) => console.error('Failed to fetch inventory:', err));
+  }, []);
 
   const handleBuyClick = (product: ShirtProduct) => {
     const size = selectedSizes[product.id] || '40';
@@ -125,11 +98,14 @@ export default function SignatureCollection({ onSectionChange, onFocusAreaChange
       </div>
 
       {/* Products */}
-      {PRODUCTS.map((prod, idx) => {
+      {products.map((prod, idx) => {
         const ref = prod.id === 'white' ? whiteRef : prod.id === 'black' ? blackRef : blueRef;
-        const currentSize = selectedSizes[prod.id];
-        const currentTab = activeTabs[prod.id];
+        const currentSize = selectedSizes[prod.id] || '40';
+        const currentTab = activeTabs[prod.id] || 'story';
         const isEven = idx % 2 === 0;
+
+        const selectedSizeStockKey = `${prod.id}-${currentSize}-${prod.colorName}`;
+        const isSelectedSizeOutOfStock = inventoryMap[selectedSizeStockKey] !== undefined && inventoryMap[selectedSizeStockKey] <= 0;
 
         return (
           <section
@@ -141,175 +117,166 @@ export default function SignatureCollection({ onSectionChange, onFocusAreaChange
             <motion.div
               initial={{ opacity: 0, scale: 1.05 }}
               whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
+              viewport={{ once: true, margin: '-10% 0px -10% 0px' }}
               transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-              className={`relative w-full md:w-1/2 min-h-[50vh] md:min-h-screen overflow-hidden bg-gradient-to-b ${prod.bgGradient}`}
+              className="w-full md:w-1/2 aspect-square md:aspect-auto md:min-h-screen bg-matte-black relative flex items-center justify-center p-8 md:p-16"
             >
-              {/* Product image */}
+              {/* Radial gradient background wash */}
+              <div
+                className="absolute inset-0 opacity-20 pointer-events-none transition-all duration-700"
+                style={{
+                  background: `radial-gradient(circle at center, ${prod.accentColor} 0%, transparent 65%)`
+                }}
+              />
+              <div className={`absolute inset-0 bg-gradient-to-b ${prod.bgGradient} opacity-30`} />
+
+              {/* Shirt Product Showcase Image */}
               <img
                 src={prod.image}
                 alt={prod.name}
-                className="absolute inset-0 w-full h-full object-cover object-center opacity-90 mix-blend-luminosity"
+                className="h-[80%] max-h-[500px] object-contain mix-blend-luminosity opacity-90 select-none relative z-10 transition-transform duration-700 hover:scale-105"
               />
-
-              {/* Gradient overlay */}
-              <div className={`absolute inset-0 bg-gradient-to-t from-[#080808] via-transparent to-transparent opacity-70`} />
-              {isEven
-                ? <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#080808]/60" />
-                : <div className="absolute inset-0 bg-gradient-to-l from-transparent to-[#080808]/60" />
-              }
-
-              {/* Index number */}
-              <div className="absolute top-8 left-8 font-serif text-[8rem] leading-none font-bold text-white/[0.04] select-none pointer-events-none">
-                0{idx + 1}
-              </div>
-
-              {/* Color chip + name at bottom */}
-              <div className="absolute bottom-8 left-8 flex items-center gap-3">
-                <div
-                  className="w-3 h-3 rounded-full border border-white/20"
-                  style={{ backgroundColor: prod.accentColor }}
-                />
-                <span className="text-[9px] uppercase tracking-[0.4em] text-ivory/40 font-sans">
-                  {prod.colorName}
-                </span>
-              </div>
             </motion.div>
 
             {/* ── Details Panel ── */}
             <motion.div
-              initial={{ opacity: 0, x: isEven ? 40 : -40 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="w-full md:w-1/2 flex flex-col justify-center px-10 md:px-16 py-16 md:py-24 gap-8"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-10% 0px -10% 0px' }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+              className="w-full md:w-1/2 min-h-screen bg-[#080808] flex items-center p-8 md:p-24 relative"
             >
-              {/* Product header */}
-              <div className="flex flex-col gap-3">
-                <span className="text-[9px] uppercase tracking-[0.45em] text-gold font-sans">
-                  Signature 0{idx + 1}
-                </span>
-                <h3
-                  className="font-serif text-4xl md:text-5xl font-light text-ivory uppercase leading-none"
-                  style={{ letterSpacing: '-0.01em' }}
-                >
-                  {prod.name}
-                </h3>
-                <p className="font-serif italic text-gold/60 text-base font-light mt-1">
-                  {prod.tagline}
-                </p>
-              </div>
-
-              {/* Price */}
-              <div className="flex items-center gap-4">
-                <span className="font-serif text-3xl text-gold font-light">${prod.price}</span>
-                <div className="h-4 w-px bg-white/10" />
-                <span className="text-[9px] uppercase tracking-[0.3em] text-ivory/30">
-                  Free worldwide shipping
-                </span>
-              </div>
-
-              {/* Tabs */}
-              <div className="flex flex-col gap-4 border-t border-white/5 pt-6">
-                <div className="flex gap-6">
-                  {(['story', 'fit', 'care'] as const).map((tab) => (
-                    <button
-                      key={tab}
-                      onClick={() => setActiveTabs((prev) => ({ ...prev, [prod.id]: tab }))}
-                      className={`text-[10px] uppercase tracking-[0.25em] pb-2 relative transition-colors duration-300 pointer-events-auto ${
-                        currentTab === tab ? 'text-gold' : 'text-ivory/35 hover:text-ivory/60'
-                      }`}
-                      data-cursor="button"
-                    >
-                      {tab}
-                      {currentTab === tab && (
-                        <motion.div
-                          layoutId={`tab-indicator-${prod.id}`}
-                          className="absolute bottom-0 left-0 right-0 h-px bg-gold"
-                        />
-                      )}
-                    </button>
-                  ))}
+              <div className="w-full space-y-8 text-left">
+                {/* Header info */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[9px] uppercase tracking-[0.45em] text-gold font-sans font-semibold">
+                      {prod.section}
+                    </span>
+                    <span className="w-1 h-1 rounded-full bg-white/20" />
+                    <span className="text-[9px] uppercase tracking-[0.3em] text-ivory/40 font-sans">
+                      {prod.colorName}
+                    </span>
+                  </div>
+                  <h3 className="font-serif text-3xl md:text-5xl uppercase tracking-wide leading-tight text-white">
+                    {prod.name}
+                  </h3>
+                  <p className="font-serif italic text-gold/75 text-lg font-light">
+                    {prod.tagline}
+                  </p>
                 </div>
 
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={currentTab}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.4 }}
-                    className="min-h-[90px]"
-                  >
-                    <p className="text-sm font-light text-ivory/55 leading-relaxed">
-                      {currentTab === 'story' && prod.story}
-                      {currentTab === 'fit' && prod.fitInfo}
-                      {currentTab === 'care' && prod.careInfo}
-                    </p>
-                    {currentTab === 'story' && (
-                      <p className="text-[10px] italic text-gold/60 mt-4 leading-relaxed">
-                        {prod.testimonial}
-                      </p>
-                    )}
-                  </motion.div>
-                </AnimatePresence>
-              </div>
+                {/* Rating */}
+                <div className="flex items-center gap-3 text-[10px] text-ivory/55">
+                  <span className="text-gold font-bold">★ {prod.rating}</span>
+                  <span className="text-ivory/20">|</span>
+                  <span>{prod.reviews} custom orders</span>
+                </div>
 
-              {/* Size selection */}
-              <div className="flex flex-col gap-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-[9px] uppercase tracking-[0.3em] text-ivory/40">Select Size (Neck cm)</span>
-                  <button className="text-[9px] uppercase tracking-[0.3em] text-gold hover:text-ivory transition-colors pointer-events-auto" data-cursor="button">
-                    Fit Guide
+                {/* Spec sheets tab controls */}
+                <div className="space-y-4">
+                  <div className="flex border-b border-white/5 pb-2 gap-6 relative z-20 pointer-events-auto">
+                    {(['story', 'fit', 'care'] as const).map((tab) => (
+                      <button
+                        key={tab}
+                        onClick={() => setActiveTabs((prev) => ({ ...prev, [prod.id]: tab }))}
+                        className={`text-[9px] uppercase tracking-widest font-sans transition-colors duration-300 pb-1 relative ${
+                          currentTab === tab ? 'text-gold' : 'text-ivory/45 hover:text-ivory'
+                        }`}
+                        data-cursor="button"
+                      >
+                        {tab}
+                        {currentTab === tab && (
+                          <motion.div
+                            layoutId={`active-tab-${prod.id}`}
+                            className="absolute bottom-0 left-0 right-0 h-[1px] bg-gold"
+                            transition={{ duration: 0.3 }}
+                          />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={currentTab}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.4 }}
+                      className="min-h-[90px]"
+                    >
+                      <p className="text-sm font-light text-ivory/55 leading-relaxed">
+                        {currentTab === 'story' && prod.story}
+                        {currentTab === 'fit' && prod.fitInfo}
+                        {currentTab === 'care' && prod.careInfo}
+                      </p>
+                      {currentTab === 'story' && (
+                        <p className="text-[10px] italic text-gold/60 mt-4 leading-relaxed">
+                          Atmosphere: {prod.atmosphere}
+                        </p>
+                      )}
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+
+                {/* Purchase Options */}
+                <div className="flex flex-col gap-4 border-t border-white/5 pt-6 relative z-20">
+                  {/* Size Selector */}
+                  <div className="flex flex-col gap-2">
+                    <span className="text-[9px] uppercase tracking-[0.2em] text-ivory/40">Select Collar Size</span>
+                    <div className="flex gap-2 flex-wrap">
+                      {SIZES.map((size) => {
+                        const stockKey = `${prod.id}-${size}-${prod.colorName}`;
+                        const isOutOfStock = inventoryMap[stockKey] !== undefined && inventoryMap[stockKey] <= 0;
+                        return (
+                          <button
+                            key={size}
+                            disabled={isOutOfStock}
+                            onClick={() => setSelectedSizes((prev) => ({ ...prev, [prod.id]: size }))}
+                            className={`w-10 h-10 rounded-lg text-xs font-semibold tracking-wider transition-all duration-300 border flex items-center justify-center pointer-events-auto ${
+                              isOutOfStock
+                                ? 'border-white/5 text-ivory/20 line-through cursor-not-allowed'
+                                : currentSize === size
+                                  ? 'bg-gold border-gold text-[#080808] font-bold shadow-[0_0_12px_rgba(212,175,55,0.2)]'
+                                  : 'border-white/10 text-ivory/60 hover:border-white/30'
+                            }`}
+                            title={isOutOfStock ? "Sold Out" : ""}
+                            data-cursor={isOutOfStock ? "disabled" : "button"}
+                          >
+                            {size}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Add to Cart button */}
+                  <button
+                    onClick={() => handleBuyClick(prod)}
+                    disabled={buyingId === prod.id || isSelectedSizeOutOfStock}
+                    className={`w-full md:w-auto px-10 py-4 font-semibold text-xs uppercase tracking-[0.25em] rounded-full transition-all duration-300 flex items-center justify-center gap-2 pointer-events-auto select-none mt-2 ${
+                      isSelectedSizeOutOfStock
+                        ? 'bg-white/5 border border-white/10 text-ivory/30 cursor-not-allowed'
+                        : 'bg-gold text-[#080808] hover:bg-white hover:text-black shadow-[0_4px_16px_rgba(212,175,55,0.1)]'
+                    }`}
+                    data-cursor={isSelectedSizeOutOfStock ? "disabled" : "button"}
+                  >
+                    {isSelectedSizeOutOfStock ? (
+                      <>Sold Out</>
+                    ) : buyingId === prod.id ? (
+                      <>
+                        <Sparkles size={13} className="animate-pulse" />
+                        Added to Bag
+                      </>
+                    ) : (
+                      <>
+                        Add to Bag
+                        <ArrowRight size={13} />
+                      </>
+                    )}
                   </button>
                 </div>
-                <div className="flex gap-2">
-                  {SIZES.map((size) => (
-                    <button
-                      key={size}
-                      onClick={() => setSelectedSizes((prev) => ({ ...prev, [prod.id]: size }))}
-                      className={`w-10 h-10 text-xs font-sans border flex items-center justify-center transition-all duration-300 pointer-events-auto ${
-                        currentSize === size
-                          ? 'border-gold bg-gold/10 text-gold'
-                          : 'border-white/10 hover:border-white/30 text-ivory/60'
-                      }`}
-                      style={{ borderRadius: '2px' }}
-                      data-cursor="button"
-                    >
-                      {size}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* CTAs */}
-              <div className="flex gap-4 pt-2">
-                <button
-                  onClick={() => handleBuyClick(prod)}
-                  disabled={buyingId !== null}
-                  className={`flex-1 py-4 text-[11px] uppercase tracking-[0.3em] flex items-center justify-center gap-3 transition-all duration-500 pointer-events-auto font-sans ${
-                    buyingId === prod.id
-                      ? 'bg-white/5 border border-gold/30 text-gold'
-                      : 'bg-gold hover:bg-ivory text-matte-black font-semibold'
-                  }`}
-                  style={{ borderRadius: '2px' }}
-                  data-cursor="button"
-                >
-                  {buyingId === prod.id ? (
-                    <><Sparkles size={13} className="animate-spin-slow" />Preparing...</>
-                  ) : (
-                    <>Buy Now <ArrowRight size={13} /></>
-                  )}
-                </button>
-
-                <button
-                  onClick={() => onBuy(prod, currentSize)}
-                  className="px-6 py-4 border border-white/10 hover:border-gold hover:text-gold text-[11px] uppercase tracking-[0.25em] text-ivory/60 transition-all duration-300 pointer-events-auto"
-                  style={{ borderRadius: '2px' }}
-                  data-cursor="button"
-                >
-                  Collect
-                </button>
               </div>
             </motion.div>
           </section>

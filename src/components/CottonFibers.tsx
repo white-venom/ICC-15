@@ -4,42 +4,40 @@ import React, { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
+const STATIC_FIBERS = Array.from({ length: 25 }, () => {
+  const points = [];
+  const startX = (Math.random() - 0.5) * 8;
+  const startY = (Math.random() - 0.5) * 8;
+  const startZ = (Math.random() - 0.5) * 4;
+  
+  points.push(new THREE.Vector3(startX, startY, startZ));
+  points.push(new THREE.Vector3(
+    startX + (Math.random() - 0.5) * 3,
+    startY + (Math.random() - 0.5) * 4 + 2,
+    startZ + (Math.random() - 0.5) * 2
+  ));
+  points.push(new THREE.Vector3(
+    startX + (Math.random() - 0.5) * 4,
+    startY + (Math.random() - 0.5) * 5 + 4,
+    startZ + (Math.random() - 0.5) * 3
+  ));
+
+  const curve = new THREE.CatmullRomCurve3(points);
+  
+  return {
+    curve,
+    thickness: Math.random() * 0.04 + 0.015,
+    speed: Math.random() * 0.2 + 0.05,
+    offset: Math.random() * Math.PI,
+    opacity: Math.random() * 0.4 + 0.2,
+  };
+});
+
 export default function CottonFibers() {
   const groupRef = useRef<THREE.Group>(null);
 
   // Generate random curves representing cotton micro-fibers
-  const fibers = useMemo(() => {
-    const arr = [];
-    for (let i = 0; i < 25; i++) {
-      const points = [];
-      const startX = (Math.random() - 0.5) * 8;
-      const startY = (Math.random() - 0.5) * 8;
-      const startZ = (Math.random() - 0.5) * 4;
-      
-      points.push(new THREE.Vector3(startX, startY, startZ));
-      points.push(new THREE.Vector3(
-        startX + (Math.random() - 0.5) * 3,
-        startY + (Math.random() - 0.5) * 4 + 2,
-        startZ + (Math.random() - 0.5) * 2
-      ));
-      points.push(new THREE.Vector3(
-        startX + (Math.random() - 0.5) * 4,
-        startY + (Math.random() - 0.5) * 5 + 4,
-        startZ + (Math.random() - 0.5) * 3
-      ));
-
-      const curve = new THREE.CatmullRomCurve3(points);
-      
-      arr.push({
-        curve,
-        thickness: Math.random() * 0.04 + 0.015,
-        speed: Math.random() * 0.2 + 0.05,
-        offset: Math.random() * Math.PI,
-        opacity: Math.random() * 0.4 + 0.2,
-      });
-    }
-    return arr;
-  }, []);
+  const fibers = STATIC_FIBERS;
 
   useFrame((state) => {
     const time = state.clock.getElapsedTime();

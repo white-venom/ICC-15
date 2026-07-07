@@ -3,41 +3,52 @@
 import React from 'react';
 import { Star, Quote } from 'lucide-react';
 import { motion } from 'framer-motion';
-
-const REVIEWS = [
-  {
-    id: 1,
-    name: 'Julian Vance',
-    title: 'Creative Director, Paris',
-    avatar: 'JV',
-    shirt: 'Ivory Signature',
-    text: 'The collar holds its structure perfectly under a tux. The fabric is cool, breathable, and refined. Truly unmatched quality.',
-    accentColor: '#d4af37',
-  },
-  {
-    id: 2,
-    name: 'Arthur Kensley',
-    title: 'CEO, London',
-    avatar: 'AK',
-    shirt: 'Onyx Statement',
-    text: 'An executive statement. The jet black color has a deep, matte quality I have never found elsewhere. Perfect fit.',
-    accentColor: '#a0a0a0',
-  },
-  {
-    id: 3,
-    name: 'Marcus Lhoste',
-    title: 'Fashion Consultant, Milan',
-    avatar: 'ML',
-    shirt: 'Royal Ceremony',
-    text: 'The fabric catches the light as you move. I wore it to the gala and received endless compliments. Stunning craft.',
-    accentColor: '#4a7fc1',
-  },
-];
+import { useAppContext } from '@/context/AppContext';
+import { TRANSLATIONS } from '@/utils/translations';
 
 export default function ReviewSection() {
+  const { country } = useAppContext();
+  const isArabic = country === 'DUBAI';
+  const t = isArabic ? TRANSLATIONS.ar : TRANSLATIONS.en;
+
+  const REVIEWS = [
+    {
+      id: 1,
+      name: isArabic ? 'جوليان فانس' : 'Julian Vance',
+      title: isArabic ? 'مدير إبداعي، باريس' : 'Creative Director, Paris',
+      avatar: 'JV',
+      shirt: isArabic ? 'العاجية العاجية' : 'Ivory Signature',
+      text: t.reviewsText1,
+      accentColor: '#d4af37',
+    },
+    {
+      id: 2,
+      name: isArabic ? 'آرثر كينسلي' : 'Arthur Kensley',
+      title: isArabic ? 'الرئيس التنفيذي، لندن' : 'CEO, London',
+      avatar: 'AK',
+      shirt: isArabic ? 'بيان أونيكس' : 'Onyx Statement',
+      text: t.reviewsText2,
+      accentColor: '#a0a0a0',
+    },
+    {
+      id: 3,
+      name: isArabic ? 'ماركوس لهوست' : 'Marcus Lhoste',
+      title: isArabic ? 'مستشار أزياء، ميلان' : 'Fashion Consultant, Milan',
+      avatar: 'ML',
+      shirt: isArabic ? 'المراسم الملكية' : 'Royal Ceremony',
+      text: t.reviewsText3,
+      accentColor: '#4a7fc1',
+    },
+  ];
+
+  const STATS = [
+    { value: '4.9★', label: t.reviewsRatingLabel },
+    { value: '300+', label: t.reviewsActiveLabel },
+    { value: '100%', label: t.reviewsGlobalLabel },
+  ];
 
   return (
-    <div className="bg-[#050505] border-t border-white/5">
+    <div className="bg-[#050505] border-t border-white/5" dir={isArabic ? 'rtl' : 'ltr'}>
       {/* Testimonials & Stats Section: Strictly constrained to exactly one viewport screen height */}
       <section id="reviews" className="relative min-h-screen w-full flex flex-col justify-center py-12 px-6 md:px-16 overflow-hidden">
         {/* Soft Background glow */}
@@ -47,23 +58,19 @@ export default function ReviewSection() {
           
           {/* Section Header */}
           <div className="text-center mb-8">
-            <p className="text-[9px] uppercase tracking-[0.4em] text-gold font-sans mb-2">Club Legacy</p>
+            <p className="text-[9px] uppercase tracking-[0.4em] text-gold font-sans mb-2">{t.reviewsEyebrow}</p>
             <h2 className="font-serif text-3xl md:text-4xl font-light uppercase tracking-tight text-ivory">
-              Member Journals
+              {t.reviewsTitle}
             </h2>
           </div>
 
-          {/* STATS BAR: Unique Pill Badge Design, Centered and scaled up */}
+          {/* STATS BAR */}
           <div className="max-w-2xl mx-auto w-full mb-12">
-            <div className="flex items-center justify-between border border-gold/20 bg-gold/[0.02] backdrop-blur-md rounded-full px-8 py-3.5 text-center shadow-lg shadow-black/50">
-              {[
-                { value: '4.9★', label: 'Average Rating' },
-                { value: '300+', label: 'Happy Clients' },
-                { value: '100%', label: 'Made to Order' },
-              ].map((stat, idx) => (
+            <div className={`flex items-center justify-between border border-gold/20 bg-gold/[0.02] backdrop-blur-md rounded-full px-8 py-3.5 text-center shadow-lg shadow-black/50 ${isArabic ? 'flex-row-reverse' : ''}`}>
+              {STATS.map((stat, idx) => (
                 <React.Fragment key={stat.label}>
                   {idx > 0 && <div className="w-px h-4 bg-gold/20" />}
-                  <div className="flex items-center gap-2.5">
+                  <div className={`flex items-center gap-2.5 ${isArabic ? 'flex-row-reverse' : ''}`}>
                     <span className="font-serif text-base md:text-lg font-light text-gold leading-none">{stat.value}</span>
                     <span className="text-[8.5px] md:text-[9.5px] uppercase tracking-[0.15em] text-ivory/60 font-sans">{stat.label}</span>
                   </div>
@@ -72,7 +79,7 @@ export default function ReviewSection() {
             </div>
           </div>
 
-          {/* Side-by-Side Reviews Grid: Optimized heights for single-screen alignment */}
+          {/* Side-by-Side Reviews Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch w-full">
             {REVIEWS.map((review, idx) => (
               <motion.div
@@ -84,24 +91,24 @@ export default function ReviewSection() {
                 className="relative p-6 rounded-xl border border-white/5 bg-white/[0.01] hover:border-white/10 hover:bg-white/[0.02] transition-all duration-300 flex flex-col justify-between h-[30vh] min-h-[200px] max-h-[270px] shadow-md shadow-black"
               >
                 {/* Quote Icon overlay */}
-                <Quote size={20} className="absolute top-4 right-4 opacity-5" style={{ color: review.accentColor }} />
+                <Quote size={20} className={`absolute top-4 ${isArabic ? 'left-4' : 'right-4'} opacity-5`} style={{ color: review.accentColor }} />
 
-                <div>
+                <div className={isArabic ? 'text-right' : 'text-left'}>
                   {/* Stars Row */}
-                  <div className="flex gap-0.5 mb-3.5">
+                  <div className={`flex gap-0.5 mb-3.5 ${isArabic ? 'justify-start' : ''}`}>
                     {[...Array(5)].map((_, i) => (
                       <Star key={i} size={11} className="fill-gold text-gold" />
                     ))}
                   </div>
 
-                  {/* Testimonial Excerpt (Slightly larger text) */}
+                  {/* Testimonial Excerpt */}
                   <p className="font-serif text-sm md:text-base font-light text-ivory/80 leading-relaxed italic line-clamp-4">
                     {review.text}
                   </p>
                 </div>
 
                 {/* Author Info */}
-                <div className="flex items-center gap-3 border-t border-white/5 pt-3.5 mt-auto">
+                <div className={`flex items-center gap-3 border-t border-white/5 pt-3.5 mt-auto ${isArabic ? 'flex-row-reverse text-right' : ''}`}>
                   <div
                     className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-sans font-bold text-black shrink-0"
                     style={{ backgroundColor: review.accentColor }}
@@ -114,7 +121,7 @@ export default function ReviewSection() {
                       {review.title}
                     </span>
                   </div>
-                  <span className="ml-auto text-[8.5px] uppercase tracking-wider text-gold/60 font-sans">
+                  <span className={`${isArabic ? 'mr-auto' : 'ml-auto'} text-[8.5px] uppercase tracking-wider text-gold/60 font-sans`}>
                     {review.shirt.split(' ')[0]}
                   </span>
                 </div>
@@ -123,8 +130,6 @@ export default function ReviewSection() {
           </div>
         </div>
       </section>
-
-
     </div>
   );
 }

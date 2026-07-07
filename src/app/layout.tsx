@@ -34,6 +34,7 @@ import NavbarWrapper from "@/components/NavbarWrapper";
 import Footer from "@/components/Footer";
 import CartWrapper from "@/components/CartWrapper";
 import FloatingSupport from "@/components/FloatingSupport";
+import AuthProvider from "@/components/AuthProvider";
 
 export default function RootLayout({
   children,
@@ -46,17 +47,19 @@ export default function RootLayout({
       className={`${cormorant.variable} ${inter.variable} h-full antialiased`}
     >
       <body suppressHydrationWarning className="min-h-full bg-matte-black text-ivory font-sans selection:bg-gold selection:text-matte-black overflow-x-hidden flex flex-col">
-        <AppProvider>
-          <SmoothScroll>
-            <NavbarWrapper />
-            <main className="flex-grow relative">
-              {children}
-            </main>
-            <Footer />
-            <CartWrapper />
-            <FloatingSupport />
-          </SmoothScroll>
-        </AppProvider>
+        <AuthProvider>
+          <AppProvider>
+            <SmoothScroll>
+              <NavbarWrapper />
+              <main className="flex-grow relative">
+                {children}
+              </main>
+              <Footer />
+              <CartWrapper />
+              <FloatingSupport />
+            </SmoothScroll>
+          </AppProvider>
+        </AuthProvider>
       </body>
     </html>
   );

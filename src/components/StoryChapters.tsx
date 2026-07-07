@@ -2,42 +2,19 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
+import { useAppContext } from '@/context/AppContext';
+import { TRANSLATIONS } from '@/utils/translations';
 
 interface StoryChaptersProps {
   onSectionChange: (section: string) => void;
   onFocusAreaChange: (area: 'all' | 'collar' | 'sleeve' | 'button') => void;
 }
 
-const CRAFT_STEPS = [
-  {
-    id: 'collar' as const,
-    label: 'The Collar Roll',
-    metric: '45°',
-    unit: 'Fold Angle',
-    desc: 'Structured interlinings inside the collar ensure it maintains a rigid roll under any formal wear. Engineered to hold form for 200+ wears without losing shape.',
-    detail: 'Semi-spread collar  ·  Fused interlining  ·  Hand-stitched roll line',
-  },
-  {
-    id: 'sleeve' as const,
-    label: 'The Sleeve Stitch',
-    metric: '120×',
-    unit: 'Stitches / Inch',
-    desc: 'Dual side-seam stitching locks the sleeve cuff without restricting wrist motion. Each seam runs parallel to 0.1mm tolerance for perfect symmetry.',
-    detail: 'Double needle seam  ·  Mitered cuff  ·  French placket',
-  },
-  {
-    id: 'button' as const,
-    label: 'Signature Buttons',
-    metric: '4-Hole',
-    unit: 'Cross-lock Stitch',
-    desc: 'Champagne shell buttons anchored with a cross-stitch thread neck for maximum pull strength. Each button survives 2,000+ duty cycles tested to industry-leading standards.',
-    detail: 'Corozo shell  ·  Cross-stitched  ·  Gold thread neck',
-  },
-];
-
-
-
 export default function StoryChapters({ onSectionChange, onFocusAreaChange }: StoryChaptersProps) {
+  const { country } = useAppContext();
+  const isArabic = country === 'DUBAI';
+  const t = isArabic ? TRANSLATIONS.ar : TRANSLATIONS.en;
+
   const [craftStep, setCraftStep] = useState<'collar' | 'sleeve' | 'button'>('collar');
 
   const c1Ref = useRef(null);
@@ -65,10 +42,37 @@ export default function StoryChapters({ onSectionChange, onFocusAreaChange }: St
     onFocusAreaChange(step);
   };
 
+  const CRAFT_STEPS = [
+    {
+      id: 'collar' as const,
+      label: isArabic ? 'لفة الياقة' : 'The Collar Roll',
+      metric: '45°',
+      unit: isArabic ? 'زاوية الطي' : 'Fold Angle',
+      desc: t.craftCollarDesc,
+      detail: t.craftCollarDetail,
+    },
+    {
+      id: 'sleeve' as const,
+      label: isArabic ? 'غرزة الأكمام' : 'The Sleeve Stitch',
+      metric: '120×',
+      unit: isArabic ? 'غرزة / بوصة' : 'Stitches / Inch',
+      desc: t.craftSleeveDesc,
+      detail: t.craftSleeveDetail,
+    },
+    {
+      id: 'button' as const,
+      label: isArabic ? 'أزرار مميزة' : 'Signature Buttons',
+      metric: '4-Hole',
+      unit: isArabic ? 'غرز متقاطعة' : 'Cross-lock Stitch',
+      desc: t.craftButtonDesc,
+      detail: t.craftButtonDetail,
+    },
+  ];
+
   const activeCraft = CRAFT_STEPS.find((s) => s.id === craftStep) ?? CRAFT_STEPS[0];
 
   return (
-    <div className="relative z-10 w-full">
+    <div className="relative z-10 w-full" dir={isArabic ? 'rtl' : 'ltr'}>
 
       {/* ── CHAPTER I: The Cotton ─────────────────────────── */}
       <section
@@ -76,7 +80,7 @@ export default function StoryChapters({ onSectionChange, onFocusAreaChange }: St
         ref={c1Ref}
         className="py-4 md:py-8 min-h-[45vh] w-full relative flex items-center overflow-hidden"
       >
-        <span className="absolute right-10 top-1/2 -translate-y-1/2 font-serif text-[28vw] leading-none font-bold text-white/[0.015] select-none pointer-events-none">I</span>
+        <span className={`absolute ${isArabic ? 'left-10' : 'right-10'} top-1/2 -translate-y-1/2 font-serif text-[28vw] leading-none font-bold text-white/[0.015] select-none pointer-events-none`}>I</span>
         <div className="relative z-10 w-full px-6 py-3 flex flex-col items-center text-center gap-4 max-w-4xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -87,11 +91,11 @@ export default function StoryChapters({ onSectionChange, onFocusAreaChange }: St
           >
             <div className="flex items-center gap-3">
               <div className="w-6 h-px bg-gold" />
-              <span className="text-[9px] uppercase tracking-[0.45em] text-gold font-sans">Chapter I</span>
+              <span className="text-[9px] uppercase tracking-[0.45em] text-gold font-sans">{isArabic ? 'الفصل الأول' : 'Chapter I'}</span>
               <div className="w-6 h-px bg-gold" />
             </div>
             <h2 className="font-serif text-5xl md:text-7xl leading-none uppercase font-light text-white tracking-wide">
-              The Cotton
+              {t.chapter1Title}
             </h2>
           </motion.div>
           <motion.div
@@ -101,12 +105,14 @@ export default function StoryChapters({ onSectionChange, onFocusAreaChange }: St
             transition={{ duration: 1, delay: 0.2 }}
             className="flex flex-col items-center gap-6 max-w-2xl"
           >
-            <p className="font-serif text-xl md:text-2xl italic text-gold font-light leading-snug">Hand-harvested in the fertile valleys of Egypt.</p>
-            <p className="text-sm md:text-base font-light text-ivory/70 leading-relaxed font-sans max-w-xl">
-              Every fiber begins its journey in the rich soil of Giza. We harvest exclusively long-staple organic cotton under golden sunlight — extraordinarily strong, yet unbelievably soft. A pure, pristine canvas upon which luxury is built.
+            <p className="font-serif text-xl md:text-2xl italic text-gold font-light leading-snug">
+              {isArabic ? 'محصود يدوياً في الأودية الخصبة بمصر.' : 'Hand-harvested in the fertile valleys of Egypt.'}
             </p>
-            <div className="flex flex-row flex-wrap justify-center items-center gap-10 md:gap-16 pt-6 border-t border-white/10 w-full">
-              {[['Long-staple', 'Giza Cotton'], ['100%', 'Organic'], ['200s', 'Thread Count']].map(([val, label]) => (
+            <p className="text-sm md:text-base font-light text-ivory/70 leading-relaxed font-sans max-w-xl">
+              {t.chapter1Desc}
+            </p>
+            <div className={`flex flex-row flex-wrap justify-center items-center gap-10 md:gap-16 pt-6 border-t border-white/10 w-full ${isArabic ? 'flex-row-reverse' : ''}`}>
+              {[[isArabic ? 'تيلة طويلة جداً' : 'Long-staple', isArabic ? 'قطن الجيزة' : 'Giza Cotton'], ['100%', isArabic ? 'عضوي' : 'Organic'], ['200s', isArabic ? 'عدد الخيوط' : 'Thread Count']].map(([val, label]) => (
                 <div key={label} className="flex flex-col gap-1 items-center">
                   <span className="text-gold font-serif text-xl md:text-2xl font-light">{val}</span>
                   <span className="text-[9px] uppercase tracking-[0.2em] text-ivory/40 font-sans">{label}</span>
@@ -128,7 +134,7 @@ export default function StoryChapters({ onSectionChange, onFocusAreaChange }: St
         ref={c2Ref}
         className="py-4 md:py-8 min-h-[45vh] w-full relative flex items-center overflow-hidden"
       >
-        <span className="absolute left-10 top-1/2 -translate-y-1/2 font-serif text-[28vw] leading-none font-bold text-white/[0.015] select-none pointer-events-none">II</span>
+        <span className={`absolute ${isArabic ? 'right-10' : 'left-10'} top-1/2 -translate-y-1/2 font-serif text-[28vw] leading-none font-bold text-white/[0.015] select-none pointer-events-none`}>II</span>
         <div className="relative z-10 w-full px-6 py-3 flex flex-col items-center text-center gap-4 max-w-4xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -139,11 +145,11 @@ export default function StoryChapters({ onSectionChange, onFocusAreaChange }: St
           >
             <div className="flex items-center gap-3">
               <div className="w-6 h-px bg-gold" />
-              <span className="text-[9px] uppercase tracking-[0.45em] text-gold font-sans">Chapter II</span>
+              <span className="text-[9px] uppercase tracking-[0.45em] text-gold font-sans">{isArabic ? 'الفصل الثاني' : 'Chapter II'}</span>
               <div className="w-6 h-px bg-gold" />
             </div>
             <h2 className="font-serif text-5xl md:text-7xl leading-none uppercase font-light text-white tracking-wide">
-              The Thread
+              {t.chapter2Title}
             </h2>
           </motion.div>
           <motion.div
@@ -153,12 +159,14 @@ export default function StoryChapters({ onSectionChange, onFocusAreaChange }: St
             transition={{ duration: 1, delay: 0.2 }}
             className="flex flex-col items-center gap-6 max-w-2xl"
           >
-            <p className="font-serif text-xl md:text-2xl italic text-gold font-light leading-snug">Spun with absolute geometrical precision.</p>
-            <p className="text-sm md:text-base font-light text-ivory/70 leading-relaxed font-sans max-w-xl">
-              Cotton strands are spun into double-ply threads, twisted exactly 120 times per inch. This high twist ratio shields the fabric from creasing while generating a natural, pearlescent reflection. Strength meets refinement in every strand.
+            <p className="font-serif text-xl md:text-2xl italic text-gold font-light leading-snug">
+              {isArabic ? 'مغزول بدقة هندسية متناهية.' : 'Spun with absolute geometrical precision.'}
             </p>
-            <div className="flex flex-row flex-wrap justify-center items-center gap-10 md:gap-16 pt-6 border-t border-white/10 w-full">
-              {[['120×', 'Twist / Inch'], ['2-Ply', 'Double Strand'], ['Pearlescent', 'Reflection']].map(([val, label]) => (
+            <p className="text-sm md:text-base font-light text-ivory/70 leading-relaxed font-sans max-w-xl">
+              {t.chapter2Desc}
+            </p>
+            <div className={`flex flex-row flex-wrap justify-center items-center gap-10 md:gap-16 pt-6 border-t border-white/10 w-full ${isArabic ? 'flex-row-reverse' : ''}`}>
+              {[[isArabic ? '١٢٠ ضعف' : '120×', isArabic ? 'التواء / بوصة' : 'Twist / Inch'], [isArabic ? 'ثنائي الطبقات' : '2-Ply', isArabic ? 'خيط مزدوج' : 'Double Strand'], [isArabic ? 'لؤلؤي' : 'Pearlescent', isArabic ? 'انعكاس الضوء' : 'Reflection']].map(([val, label]) => (
                 <div key={label} className="flex flex-col gap-1 items-center">
                   <span className="text-gold font-serif text-xl md:text-2xl font-light">{val}</span>
                   <span className="text-[9px] uppercase tracking-[0.2em] text-ivory/40 font-sans">{label}</span>
@@ -180,7 +188,7 @@ export default function StoryChapters({ onSectionChange, onFocusAreaChange }: St
         ref={c3Ref}
         className="py-4 md:py-8 min-h-[45vh] w-full relative flex items-center overflow-hidden"
       >
-        <span className="absolute left-10 top-1/2 -translate-y-1/2 font-serif text-[28vw] leading-none font-bold text-white/[0.015] select-none pointer-events-none">III</span>
+        <span className={`absolute ${isArabic ? 'left-10' : 'right-10'} top-1/2 -translate-y-1/2 font-serif text-[28vw] leading-none font-bold text-white/[0.015] select-none pointer-events-none`}>III</span>
         <div className="relative z-10 w-full px-6 py-3 flex flex-col items-center text-center gap-4 max-w-4xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -191,11 +199,11 @@ export default function StoryChapters({ onSectionChange, onFocusAreaChange }: St
           >
             <div className="flex items-center gap-3">
               <div className="w-6 h-px bg-gold" />
-              <span className="text-[9px] uppercase tracking-[0.45em] text-gold font-sans">Chapter III</span>
+              <span className="text-[9px] uppercase tracking-[0.45em] text-gold font-sans">{isArabic ? 'الفصل الثالث' : 'Chapter III'}</span>
               <div className="w-6 h-px bg-gold" />
             </div>
             <h2 className="font-serif text-5xl md:text-7xl leading-none uppercase font-light text-white tracking-wide">
-              The Fabric
+              {t.chapter3Title}
             </h2>
           </motion.div>
           <motion.div
@@ -205,12 +213,14 @@ export default function StoryChapters({ onSectionChange, onFocusAreaChange }: St
             transition={{ duration: 1, delay: 0.2 }}
             className="flex flex-col items-center gap-6 max-w-2xl"
           >
-            <p className="font-serif text-xl md:text-2xl italic text-gold font-light leading-snug">Woven on ancestral Italian looms.</p>
-            <p className="text-sm md:text-base font-light text-ivory/70 leading-relaxed font-sans max-w-xl">
-              Woven in historic, family-owned looms in Milan, Italy. Boasting a thread count exceeding 200 threads per square inch, the finished weave breathes effortlessly like a second skin while holding sharp, majestic structure.
+            <p className="font-serif text-xl md:text-2xl italic text-gold font-light leading-snug">
+              {isArabic ? 'منسوج على أنوال إيطالية عريقة.' : 'Woven on ancestral Italian looms.'}
             </p>
-            <div className="flex flex-row flex-wrap justify-center items-center gap-10 md:gap-16 pt-6 border-t border-white/10 w-full">
-              {[['200+', 'Threads / in²'], ['Milan', 'Italian Loom'], ['Breathable', 'Structure']].map(([val, label]) => (
+            <p className="text-sm md:text-base font-light text-ivory/70 leading-relaxed font-sans max-w-xl">
+              {t.chapter3Desc}
+            </p>
+            <div className={`flex flex-row flex-wrap justify-center items-center gap-10 md:gap-16 pt-6 border-t border-white/10 w-full ${isArabic ? 'flex-row-reverse' : ''}`}>
+              {[[isArabic ? '٢٠٠+' : '200+', isArabic ? 'خيط / بوصة مربعة' : 'Threads / in²'], [isArabic ? 'ميلان' : 'Milan', isArabic ? 'نول إيطالي' : 'Italian Loom'], [isArabic ? 'منسوج منساب' : 'Breathable', isArabic ? 'هيكل النسيج' : 'Structure']].map(([val, label]) => (
                 <div key={label} className="flex flex-col gap-1 items-center">
                   <span className="text-gold font-serif text-xl md:text-2xl font-light">{val}</span>
                   <span className="text-[9px] uppercase tracking-[0.2em] text-ivory/40 font-sans">{label}</span>
@@ -227,7 +237,7 @@ export default function StoryChapters({ onSectionChange, onFocusAreaChange }: St
         </div>
       </section>
 
-      {/* ── CHAPTER IV: CRAFTSMANSHIP — Precision Layout ─── */}
+      {/* ── CHAPTER IV: CRAFTSMANSHIP ─────────────────────── */}
       <section
         ref={c4Ref}
         className="py-8 md:py-12 min-h-[50vh] w-full relative flex items-center overflow-hidden"
@@ -240,7 +250,7 @@ export default function StoryChapters({ onSectionChange, onFocusAreaChange }: St
             backgroundSize: '60px 60px',
           }}
         />
-        {/* Vignette over grid so it fades at edges */}
+        {/* Vignette over grid */}
         <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(5,5,5,0.65)_85%)]" />
 
         <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 font-serif text-[35vw] leading-none font-bold text-white/[0.022] select-none pointer-events-none">IV</span>
@@ -256,14 +266,14 @@ export default function StoryChapters({ onSectionChange, onFocusAreaChange }: St
           >
             <div className="flex items-center gap-3 mb-5">
               <div className="w-6 h-px bg-gold" />
-              <span className="text-[9px] uppercase tracking-[0.45em] text-gold font-sans">Chapter IV</span>
+              <span className="text-[9px] uppercase tracking-[0.45em] text-gold font-sans">{isArabic ? 'الفصل الرابع' : 'Chapter IV'}</span>
               <div className="w-6 h-px bg-gold" />
             </div>
             <h2 className="font-serif text-5xl md:text-7xl leading-none uppercase font-light text-white mb-3 tracking-wide">
-              Craftsmanship
+              {isArabic ? 'الحرفية' : 'Craftsmanship'}
             </h2>
             <p className="text-xs uppercase tracking-[0.3em] text-white/50 max-w-sm">
-              Select a detail to reveal precision engineering data
+              {isArabic ? 'اختر تفصيلاً للحصول على البيانات الفنية للهندسة الدقيقة' : 'Select a detail to reveal precision engineering data'}
             </p>
           </motion.div>
 
@@ -271,7 +281,7 @@ export default function StoryChapters({ onSectionChange, onFocusAreaChange }: St
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
 
             {/* LEFT: Animated metric */}
-            <div className="flex flex-col gap-8">
+            <div className={isArabic ? 'text-right' : 'text-left'}>
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeCraft.id}
@@ -281,7 +291,6 @@ export default function StoryChapters({ onSectionChange, onFocusAreaChange }: St
                   transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
                   className="flex flex-col gap-3"
                 >
-                  {/* Giant metric - solid gold so it's always visible */}
                   <div
                     className="font-serif text-gold leading-none font-light"
                     style={{
@@ -304,13 +313,13 @@ export default function StoryChapters({ onSectionChange, onFocusAreaChange }: St
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.4, delay: 0.15 }}
-                  className="flex flex-col gap-5 max-w-md"
+                  className="flex flex-col gap-5 max-w-md mt-6"
                 >
                   <p className="text-sm font-light text-white leading-relaxed">
                     {activeCraft.desc}
                   </p>
                   <div className="flex flex-col gap-2 pt-4 border-t border-white/20">
-                    <span className="text-[9px] uppercase tracking-[0.3em] text-gold font-sans">Technical Detail</span>
+                    <span className="text-[9px] uppercase tracking-[0.3em] text-gold font-sans">{isArabic ? 'التفصيل الفني' : 'Technical Detail'}</span>
                     <span className="text-[11px] text-white/80 font-sans leading-relaxed">
                       {activeCraft.detail}
                     </span>
@@ -331,17 +340,17 @@ export default function StoryChapters({ onSectionChange, onFocusAreaChange }: St
                     viewport={{ once: true }}
                     transition={{ duration: 0.6, delay: i * 0.1 }}
                     onClick={() => handleCraftStep(step.id)}
-                    className={`group w-full text-left transition-all duration-400 pointer-events-auto relative overflow-hidden border ${isActive
+                    className={`group w-full transition-all duration-400 pointer-events-auto relative overflow-hidden border ${isActive
                       ? 'border-gold/60 bg-gold/8'
                       : 'border-white/10 hover:border-white/25 bg-white/[0.02] hover:bg-white/[0.04]'
-                      }`}
+                      } ${isArabic ? 'text-right' : 'text-left'}`}
                     style={{ borderRadius: '3px' }}
                     data-cursor="button"
                   >
-                    {/* Active left bar */}
-                    <div className={`absolute left-0 top-0 bottom-0 w-[4px] bg-gold transition-all duration-300 ${isActive ? 'opacity-100' : 'opacity-0'}`} />
+                    {/* Active side bar */}
+                    <div className={`absolute top-0 bottom-0 w-[4px] bg-gold transition-all duration-300 ${isActive ? 'opacity-100' : 'opacity-0'} ${isArabic ? 'right-0' : 'left-0'}`} />
 
-                    <div className="pl-9 pr-8 py-7 flex items-center justify-between gap-4">
+                    <div className={`pl-9 pr-8 py-7 flex items-center justify-between gap-4 ${isArabic ? 'flex-row-reverse' : ''}`}>
                       <div className="flex flex-col gap-2">
                         <span className={`text-[10px] uppercase tracking-[0.4em] font-sans transition-colors duration-300 ${isActive ? 'text-gold' : 'text-white/30'}`}>
                           0{i + 1}

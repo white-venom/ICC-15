@@ -24,16 +24,17 @@ function SceneRig({
   activeSection: string;
   focusArea: 'all' | 'collar' | 'sleeve' | 'button';
 }) {
-  const { camera } = useThree();
+  useThree(); // Initialize inside fiber context
   const spotlightRef = useRef<THREE.SpotLight>(null);
 
   useFrame((state) => {
+    const { camera } = state;
     const time = state.clock.getElapsedTime();
     const pointer = state.pointer; // Normalized mouse coordinates [-1, 1]
 
     // Set camera base coordinates based on scroll section
     let targetX = 0;
-    let targetY = 0;
+    const targetY = 0;
     let targetZ = 5;
 
     if (activeSection === 'cotton') {
@@ -96,22 +97,25 @@ function SceneRig({
   );
 }
 
+const PARTICLE_COUNT = 120;
+const [STATIC_POSITIONS, STATIC_SPEEDS] = (() => {
+  const pos = new Float32Array(PARTICLE_COUNT * 3);
+  const spd = new Float32Array(PARTICLE_COUNT);
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    pos[i * 3] = (Math.random() - 0.5) * 10;
+    pos[i * 3 + 1] = (Math.random() - 0.5) * 10;
+    pos[i * 3 + 2] = (Math.random() - 0.5) * 5;
+    spd[i] = Math.random() * 0.005 + 0.002;
+  }
+  return [pos, spd];
+})();
+
 // 2. Global Soft Ambient Particles
 function AmbientParticles() {
   const pointsRef = useRef<THREE.Points>(null);
 
-  const [positions, speeds] = React.useMemo(() => {
-    const count = 120;
-    const pos = new Float32Array(count * 3);
-    const spd = new Float32Array(count);
-    for (let i = 0; i < count; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 10;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 10;
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 5;
-      spd[i] = Math.random() * 0.005 + 0.002;
-    }
-    return [pos, spd];
-  }, []);
+  const [positions] = React.useState(() => new Float32Array(STATIC_POSITIONS));
+  const [speeds] = React.useState(() => new Float32Array(STATIC_SPEEDS));
 
   useFrame(() => {
     if (pointsRef.current) {

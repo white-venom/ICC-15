@@ -21,6 +21,9 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
     } as ConstructorParameters<typeof Lenis>[0]);
 
     lenisRef.current = lenis;
+    if (typeof window !== 'undefined') {
+      (window as any).lenis = lenis;
+    }
 
     // Animation frame loop
     function raf(time: number) {
@@ -43,6 +46,9 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
       resizeObserver.disconnect();
       lenis.destroy();
       lenisRef.current = null;
+      if (typeof window !== 'undefined') {
+        delete (window as any).lenis;
+      }
     };
   }, []);
 

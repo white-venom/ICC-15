@@ -3,12 +3,15 @@
 import React from 'react';
 import Cart from './Cart';
 import { useAppContext } from '@/context/AppContext';
+import { useRouter } from 'next/navigation';
 
 export default function CartWrapper() {
   const { cartOpen, setCartOpen, cartItems, removeFromCart } = useAppContext();
+  const router = useRouter();
 
   const handleCheckout = () => {
-    alert('Thank you. Connecting to our private secure check-out portal...');
+    setCartOpen(false);
+    router.push('/checkout');
   };
 
   return (
@@ -18,6 +21,7 @@ export default function CartWrapper() {
       items={cartItems}
       onRemoveItem={removeFromCart}
       onCheckout={handleCheckout}
+      isLoading={false}
     />
   );
 }

@@ -1,0 +1,143 @@
+[
+    {
+        "id":  "white",
+        "name":  "The Ivory Signature",
+        "price":  195,
+        "colorName":  "Ivory White",
+        "tagline":  "Absolute Purity. Absolute Power.",
+        "badge":  "Best Seller",
+        "section":  "bestseller",
+        "rating":  4.9,
+        "reviews":  128,
+        "description":  "Woven from 100% long-staple Giza cotton with a semi-spread collar, double-button mitred cuffs, and champagne-hued shell buttons. The white canvas of refinement — for boardrooms, ceremonies, and every moment demanding authority.",
+        "features":  [
+                         "Giza Cotton",
+                         "Pearl Buttons",
+                         "Double Cuffs",
+                         "French Seams",
+                         "Semi-spread Collar",
+                         "Fused Interlining"
+                     ],
+        "image":  "/assets/shirt_white.png",
+        "images":  [
+                       "/assets/shirt_white.png",
+                       "/assets/shirt_white_collar.png",
+                       "/assets/shirt_white_cuff.png"
+                   ],
+        "accent":  "#d4af37",
+        "gradient":  "from-[#171310] via-[#0b0a08] to-[#040404]",
+        "sizes":  [
+                      "38",
+                      "39",
+                      "40",
+                      "41",
+                      "42",
+                      "43",
+                      "44"
+                  ],
+        "material":  "100% Giza Long-Staple Cotton",
+        "origin":  "Milan, Italy",
+        "washCare":  "Dry clean only. Steam press.",
+        "testimonial":  "\"The collar holds its structure perfectly under a tux. Truly unmatched quality.\" — Julian V., Creative Director",
+        "bgGradient":  "from-[#1a1a18] to-[#0d0d0d]",
+        "accentColor":  "rgba(255,255,240,0.6)",
+        "story":  "Woven from 100% long-staple Giza cotton, it features a semi-spread collar, double-button mitred cuffs, and champagne-hued shell buttons. The definitive dress shirt.",
+        "atmosphere":  "Ivory ambient lighting reflecting absolute purity and status.",
+        "fitInfo":  "Tailored fit. Slim cut across the torso without tightening the chest. Designed to follow the natural lines of the shoulder.",
+        "careInfo":  "Dry clean recommended. Hand wash cold using silk-detergent, iron damp on medium-high heat."
+    },
+    {
+        "id":  "black",
+        "name":  "The Onyx Statement",
+        "price":  220,
+        "colorName":  "Jet Black",
+        "tagline":  "Quiet Authority. Loud Presence.",
+        "badge":  "New Arrival",
+        "section":  "newarrival",
+        "rating":  4.8,
+        "reviews":  94,
+        "description":  "Constructed from high-twist double-ply yarns with an organic calendering process for a sophisticated matte-sheen texture. Black redefined — structured, sleek, and commanding.",
+        "features":  [
+                         "Double Ply",
+                         "Matte Sheen",
+                         "Tapered Waist",
+                         "Executive Cut",
+                         "French Placket",
+                         "Mitered Cuffs"
+                     ],
+        "image":  "/assets/shirt_black.png",
+        "images":  [
+                       "/assets/shirt_black.png",
+                       "/assets/shirt_black_collar.png",
+                       "/assets/shirt_black_cuff.png"
+                   ],
+        "accent":  "#c0c0c0",
+        "gradient":  "from-[#111111] via-[#090909] to-[#040404]",
+        "sizes":  [
+                      "38",
+                      "39",
+                      "40",
+                      "41",
+                      "42",
+                      "43",
+                      "44"
+                  ],
+        "material":  "200s Double-Ply Egyptian Cotton",
+        "origin":  "Naples, Italy",
+        "washCare":  "Dry clean only. Cold iron inside-out.",
+        "testimonial":  "\"An executive statement. The jet black color has a deep reflection I have never found elsewhere.\" — Arthur K., CEO",
+        "bgGradient":  "from-[#111111] to-[#080808]",
+        "accentColor":  "rgba(180,180,180,0.5)",
+        "story":  "Constructed using high-twist double-ply black yarns. The fabric undergoes an organic calendering process, providing a sophisticated matte-sheen texture that absorbs light beautifully.",
+        "atmosphere":  "Dramatic spotlights creating high-contrast specular reflections.",
+        "fitInfo":  "Classic tailored fit. Relaxed armholes with a tapered waist for a sharp, commanding posture.",
+        "careInfo":  "Dry clean only to maintain the signature matte-sheen coating. Steam iron inside out."
+    },
+    {
+        "id":  "blue",
+        "name":  "The Royal Ceremony",
+        "price":  210,
+        "colorName":  "Royal Blue",
+        "tagline":  "Born for the Occasion.",
+        "badge":  "Limited Edition",
+        "section":  "limited",
+        "rating":  5.0,
+        "reviews":  67,
+        "description":  "Woven with a micro-twill pattern. Deep royal blue yarns mercerized twice for maximum color depth and silk-like hand feel. Reserved for occasions that demand excellence.",
+        "features":  [
+                         "Micro-Twill",
+                         "Double Mercerized",
+                         "Bespoke Fit",
+                         "Iridescent Sheen",
+                         "Mother-of-Pearl Buttons",
+                         "Double Side Seams"
+                     ],
+        "image":  "/assets/shirt_blue.png",
+        "images":  [
+                       "/assets/shirt_blue.png",
+                       "/assets/shirt_blue_collar.png",
+                       "/assets/shirt_blue_cuff.png"
+                   ],
+        "accent":  "#4a7fc1",
+        "gradient":  "from-[#070b12] via-[#04060b] to-[#040404]",
+        "sizes":  [
+                      "38",
+                      "39",
+                      "40",
+                      "41",
+                      "42",
+                      "43",
+                      "44"
+                  ],
+        "material":  "120s Mercerized Micro-Twill Cotton",
+        "origin":  "Como, Italy",
+        "washCare":  "Dry clean only. Low-heat steam only.",
+        "testimonial":  "\"The fabric catches the light as you move. It is almost iridescent. Stunning.\" — Marcus L., Fashion Consultant",
+        "bgGradient":  "from-[#0a0f1a] to-[#080808]",
+        "accentColor":  "rgba(80,120,220,0.6)",
+        "story":  "Woven with a micro-twill pattern that bounces light dynamically. The deep royal blue yarns are mercerized twice for maximum color depth and a luxurious, silk-like hand feel.",
+        "atmosphere":  "Royal blue ambient wash for formal receptions and events.",
+        "fitInfo":  "Bespoke fit. Slimmer sleeves and high armholes. Fits like a tailored glove for commanding presence.",
+        "careInfo":  "Machine wash delicate, cold. Line dry in shade. Warm iron if necessary."
+    }
+]

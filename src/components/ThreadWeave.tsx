@@ -4,6 +4,14 @@ import React, { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
+const STATIC_PULSES = Array.from({ length: 15 }, () => ({
+  direction: Math.random() > 0.5 ? 'horizontal' : 'vertical',
+  lineIndex: Math.floor(Math.random() * 14),
+  speed: Math.random() * 2 + 1,
+  progress: Math.random(),
+  size: Math.random() * 0.05 + 0.03,
+}));
+
 export default function ThreadWeave() {
   const groupRef = useRef<THREE.Group>(null);
   const pulseGroupRef = useRef<THREE.Group>(null);
@@ -41,19 +49,7 @@ export default function ThreadWeave() {
   }, []);
 
   // Moving glowing light pulses along the thread lines
-  const pulses = useMemo(() => {
-    const arr = [];
-    for (let i = 0; i < 15; i++) {
-      arr.push({
-        direction: Math.random() > 0.5 ? 'horizontal' : 'vertical',
-        lineIndex: Math.floor(Math.random() * threadsCount),
-        speed: Math.random() * 2 + 1,
-        progress: Math.random(),
-        size: Math.random() * 0.05 + 0.03,
-      });
-    }
-    return arr;
-  }, []);
+  const pulses = useMemo(() => STATIC_PULSES.map(p => ({ ...p })), []);
 
   useFrame((state, delta) => {
     const time = state.clock.getElapsedTime();
