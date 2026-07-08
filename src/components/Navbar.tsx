@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { ShoppingBag, Menu, X, ChevronDown, User, Heart, Truck, LogOut, Settings, CheckCircle2, Circle, Edit3, Lock, Trophy } from 'lucide-react';
+import { ShoppingBag, Menu, X, ChevronDown, User, Heart, Truck, LogOut, Settings, CheckCircle2, Circle, Edit3, Lock, Trophy, Coins, MapPin } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
 import { TRANSLATIONS } from '@/utils/translations';
 import { useSession, signOut } from 'next-auth/react';
@@ -30,11 +30,19 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
   
   // Profile dropdown and modal states
   const [showDropdown, setShowDropdown] = useState(false);
-  const [activeModal, setActiveModal] = useState<'profile' | 'history' | 'benefits' | null>(null);
+  const [activeModal, setActiveModal] = useState<'profile' | 'history' | 'benefits' | 'points' | 'address' | null>(null);
   const [profileData, setProfileData]   = useState<any>(null);
   const [editName, setEditName]         = useState('');
   const [updating, setUpdating]         = useState(false);
   const [wishlistItems, setWishlistItems] = useState<any[]>([]);
+  
+  // States for address book editing
+  const [editAddress, setEditAddress]     = useState('');
+  const [editApartment, setEditApartment] = useState('');
+  const [editCity, setEditCity]           = useState('');
+  const [editState, setEditState]         = useState('');
+  const [editPincode, setEditPincode]     = useState('');
+  const [editCountry, setEditCountry]     = useState('');
 
   // Refs and effect to close dropdown on clicking outside
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -74,6 +82,12 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
         const data = await res.json();
         setProfileData(data);
         setEditName(data.name || '');
+        setEditAddress(data.address || '');
+        setEditApartment(data.apartment || '');
+        setEditCity(data.city || '');
+        setEditState(data.state || '');
+        setEditPincode(data.pincode || '');
+        setEditCountry(data.country || '');
         
         // Map saved product IDs to full product objects
         const saved = PRODUCTS.filter(p => 
@@ -99,6 +113,33 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
       if (res.ok) {
         fetchProfileData();
         alert('Profile updated successfully.');
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleUpdateAddress = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setUpdating(true);
+    try {
+      const res = await fetch('/api/user/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          address: editAddress,
+          apartment: editApartment,
+          city: editCity,
+          state: editState,
+          pincode: editPincode,
+          country: editCountry
+        })
+      });
+      if (res.ok) {
+        fetchProfileData();
+        alert('Address updated successfully.');
       }
     } catch (e) {
       console.error(e);
@@ -395,6 +436,24 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
                       className="py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl text-[9px] uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 transition-all border border-white/10 cursor-pointer"
                     >
                       <Trophy size={11} className="text-gold" /> Benefits
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowDropdown(false);
+                        setActiveModal('points');
+                      }}
+                      className="py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl text-[9px] uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 transition-all border border-white/10 cursor-pointer"
+                    >
+                      <Coins size={11} className="text-gold" /> Club Points
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowDropdown(false);
+                        setActiveModal('address');
+                      }}
+                      className="py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl text-[9px] uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 transition-all border border-white/10 cursor-pointer"
+                    >
+                      <MapPin size={11} className="text-gold" /> Addresses
                     </button>
                   </div>
 
@@ -815,6 +874,175 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
                       )}
                     </div>
                   </div>
+                </>
+              )}
+
+              {/* MODAL 4: POINTS */}
+              {activeModal === 'points' && (
+                <>
+                  <div className="border-b border-white/5 pb-4">
+                    <h3 className="font-serif text-2xl uppercase tracking-wider text-white">Atelier Club Points</h3>
+                    <p className="text-[10px] text-gold tracking-widest uppercase mt-1">Earning rewards on luxury couture selections</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                    {/* Points Card */}
+                    <div className="bg-gradient-to-br from-[#1c160c] via-[#0c0906] to-[#050403] border border-gold/15 rounded-3xl p-6 flex flex-col justify-between aspect-[1.6/1] shadow-xl text-left relative overflow-hidden">
+                      <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+                        <Coins size={120} className="text-gold" />
+                      </div>
+                      
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="text-[8px] text-white/40 uppercase tracking-widest">Points Account</p>
+                          <p className="font-serif text-sm text-white uppercase tracking-wider mt-1">{profileData.name || 'Member'}</p>
+                        </div>
+                        <span className="px-2.5 py-0.5 rounded-full bg-gold/10 border border-gold/20 text-gold text-[8px] uppercase tracking-widest font-semibold">
+                          {profileData.tier || 'None'} Member
+                        </span>
+                      </div>
+
+                      <div className="mt-auto">
+                        <p className="text-[8px] text-gold uppercase tracking-[0.2em] font-semibold">Available Balance</p>
+                        <div className="flex items-baseline gap-1 mt-1">
+                          <span className="font-mono text-3xl font-bold text-white">
+                            {(() => {
+                              const totalSpent = profileData.orders?.reduce((acc: number, order: any) => acc + order.totalPrice, 0) || 0;
+                              const pointsMultiplier = profileData.tier === 'Gold' ? 0.10 : profileData.tier === 'Silver' ? 0.05 : 0;
+                              return Math.round(totalSpent * pointsMultiplier).toLocaleString();
+                            })()}
+                          </span>
+                          <span className="text-[10px] text-gold uppercase font-bold tracking-widest">credits</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* How it works ledger */}
+                    <div className="space-y-4 text-left">
+                      <h4 className="text-[11px] uppercase tracking-widest text-white/50 font-bold border-b border-white/5 pb-2">Reward Ledger</h4>
+                      <div className="space-y-3 text-xs leading-relaxed text-ivory/70">
+                        <p>
+                          Your accumulated rewards are calculated automatically based on your order history and tier percentage:
+                        </p>
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-[10px] border-b border-white/5 pb-1">
+                            <span>Total Spend History:</span>
+                            <span className="text-white font-mono">
+                              {formatPrice(profileData.orders?.reduce((acc: number, order: any) => acc + order.totalPrice, 0) || 0)}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-[10px] border-b border-white/5 pb-1">
+                            <span>Multiplier Rate:</span>
+                            <span className="text-gold font-mono">
+                              {profileData.tier === 'Gold' ? '10% (Gold)' : profileData.tier === 'Silver' ? '5% (Silver)' : '0% (Pending Activation)'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-[10px] font-bold text-white pt-1">
+                            <span>Calculated Reward Balance:</span>
+                            <span className="text-gold font-mono font-bold">
+                              {(() => {
+                                const totalSpent = profileData.orders?.reduce((acc: number, order: any) => acc + order.totalPrice, 0) || 0;
+                                const pointsMultiplier = profileData.tier === 'Gold' ? 0.10 : profileData.tier === 'Silver' ? 0.05 : 0;
+                                return Math.round(totalSpent * pointsMultiplier).toLocaleString();
+                              })()} Credits
+                            </span>
+                          </div>
+                        </div>
+                        <p className="text-[10px] text-ivory/40 leading-normal italic mt-2">
+                          * Reward credits are automatically applied as a discount on your next checkout once confirmed by your personal atelier assistant.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* MODAL 5: SAVED ADDRESS */}
+              {activeModal === 'address' && (
+                <>
+                  <div className="border-b border-white/5 pb-4">
+                    <h3 className="font-serif text-2xl uppercase tracking-wider text-white">Atelier Address Registry</h3>
+                    <p className="text-[10px] text-gold tracking-widest uppercase mt-1">Manage delivery locations and billing address settings</p>
+                  </div>
+
+                  <form onSubmit={handleUpdateAddress} className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="flex flex-col gap-1.5 col-span-1 sm:col-span-2">
+                        <label className="text-[9px] uppercase tracking-widest text-ivory/40">Street Address</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. 123 Atelier Way"
+                          value={editAddress}
+                          onChange={(e) => setEditAddress(e.target.value)}
+                          className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none transition-colors text-xs"
+                        />
+                      </div>
+                      
+                      <div className="flex flex-col gap-1.5 col-span-1 sm:col-span-2">
+                        <label className="text-[9px] uppercase tracking-widest text-ivory/40">Apartment, Suite, Unit, etc.</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Suite 4B"
+                          value={editApartment}
+                          onChange={(e) => setEditApartment(e.target.value)}
+                          className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none transition-colors text-xs"
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[9px] uppercase tracking-widest text-ivory/40">City</label>
+                        <input
+                          type="text"
+                          required
+                          value={editCity}
+                          onChange={(e) => setEditCity(e.target.value)}
+                          className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none transition-colors text-xs"
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[9px] uppercase tracking-widest text-ivory/40">State / Region</label>
+                        <input
+                          type="text"
+                          required
+                          value={editState}
+                          onChange={(e) => setEditState(e.target.value)}
+                          className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none transition-colors text-xs"
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[9px] uppercase tracking-widest text-ivory/40">Pincode / Postal Code</label>
+                        <input
+                          type="text"
+                          required
+                          value={editPincode}
+                          onChange={(e) => setEditPincode(e.target.value)}
+                          className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none transition-colors text-xs"
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[9px] uppercase tracking-widest text-ivory/40">Country</label>
+                        <input
+                          type="text"
+                          required
+                          value={editCountry}
+                          onChange={(e) => setEditCountry(e.target.value)}
+                          className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory/60 focus:outline-none transition-colors text-xs"
+                        />
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={updating}
+                      className="w-full py-3 bg-gold text-[#050505] font-bold text-[10px] uppercase tracking-widest rounded-xl hover:bg-white transition-colors flex justify-center items-center gap-2 cursor-pointer mt-4"
+                    >
+                      {updating ? 'Updating...' : 'Save Address'}
+                    </button>
+                  </form>
                 </>
               )}
             </motion.div>
