@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { ShoppingBag, Menu, X, ChevronDown, User, Heart, Truck, LogOut, Settings, CheckCircle2, Circle, Edit3, Lock } from 'lucide-react';
+import { ShoppingBag, Menu, X, ChevronDown, User, Heart, Truck, LogOut, Settings, CheckCircle2, Circle, Edit3, Lock, Trophy } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
 import { TRANSLATIONS } from '@/utils/translations';
 import { useSession, signOut } from 'next-auth/react';
@@ -323,40 +323,74 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
                     const displayOrders = profileData.orders && profileData.orders.length > 0 
                       ? profileData.orders 
                       : [{ trackingNumber: "ICC-849204", status: "Shipped" }];
+                    const activeOrder = displayOrders[0];
                     return (
-                      <div className="bg-[#141414] border border-white/10 rounded-2xl p-4 text-left shadow-sm flex flex-col gap-1.5">
+                      <div className="bg-[#141414] border border-white/10 rounded-2xl p-4 text-left shadow-sm flex flex-col gap-2.5">
                         <div className="flex justify-between items-center text-[9px] uppercase tracking-widest text-white/50">
                           <span>Active Order</span>
                           <span className={`px-2.5 py-0.5 text-[8px] font-bold rounded-full border ${
-                            displayOrders[0].status === 'Delivered' 
+                            activeOrder.status === 'Delivered' 
                               ? 'border-green-500/20 bg-green-500/5 text-green-400' 
                               : 'border-gold/25 bg-gold/5 text-gold'
                           }`}>
-                            {displayOrders[0].status}
+                            {activeOrder.status}
                           </span>
                         </div>
-                        <p className="font-mono text-[10px] text-white/95 tracking-widest truncate">{displayOrders[0].trackingNumber}</p>
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-[7px] text-white/35 uppercase tracking-widest">Order ID</span>
+                          <p className="font-mono text-[9px] text-white/90 tracking-widest truncate">{activeOrder.trackingNumber}</p>
+                        </div>
+                        <a
+                          href={`https://wa.me/919917128864?text=Hello,%20I'd%20like%20to%20track%20my%20order%20${activeOrder.trackingNumber}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full py-2 bg-gold hover:bg-white text-black text-[9px] font-bold uppercase tracking-widest rounded-xl flex items-center justify-center gap-1.5 transition-all text-center cursor-pointer shadow-md"
+                        >
+                          <Truck size={11} /> Track Order
+                        </a>
                       </div>
                     );
                   })()}
 
-                  {/* BUTTONS */}
-                  <div className="grid grid-cols-2 gap-2.5 mt-1">
+                  {/* QUICK LINKS */}
+                  <div className="grid grid-cols-2 gap-2.5">
                     <button
                       onClick={() => {
                         setShowDropdown(false);
                         setShowModal(true);
                       }}
-                      className="py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl text-[9px] uppercase tracking-widest font-bold flex items-center justify-center gap-2 transition-all border border-white/10 cursor-pointer"
+                      className="py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl text-[9px] uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 transition-all border border-white/10 cursor-pointer"
                     >
-                      <Settings size={11} /> Profile / Saved
+                      <ShoppingBag size={11} className="text-gold" /> History
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowDropdown(false);
+                        router.push('/#loyalty');
+                      }}
+                      className="py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl text-[9px] uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 transition-all border border-white/10 cursor-pointer"
+                    >
+                      <Trophy size={11} className="text-gold" /> Benefits
+                    </button>
+                  </div>
+
+                  {/* SETTINGS / LOG OUT */}
+                  <div className="grid grid-cols-2 gap-2.5 mt-0.5">
+                    <button
+                      onClick={() => {
+                        setShowDropdown(false);
+                        setShowModal(true);
+                      }}
+                      className="py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl text-[9px] uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 transition-all border border-white/10 cursor-pointer"
+                    >
+                      <Settings size={11} /> Profile
                     </button>
                     <button
                       onClick={() => {
                         setShowDropdown(false);
                         signOut({ callbackUrl: '/' });
                       }}
-                      className="py-3 bg-red-950/15 hover:bg-red-950/35 text-red-400 border border-red-500/20 rounded-xl text-[9px] uppercase tracking-widest font-bold flex items-center justify-center gap-2 transition-all cursor-pointer"
+                      className="py-2.5 bg-red-950/15 hover:bg-red-950/35 text-red-400 border border-red-500/20 rounded-xl text-[9px] uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                     >
                       <LogOut size={11} /> Log Out
                     </button>

@@ -94,7 +94,7 @@ export default function LoyaltyTiers() {
   ];
 
   return (
-    <section className="relative py-24 px-6 md:px-16 bg-[#050505] overflow-hidden z-10 font-sans border-b border-white/5" dir={isArabic ? 'rtl' : 'ltr'}>
+    <section id="loyalty" className="relative py-24 px-6 md:px-16 bg-[#050505] overflow-hidden z-10 font-sans border-b border-white/5" dir={isArabic ? 'rtl' : 'ltr'}>
       {/* Editorial Watermark background */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none overflow-hidden opacity-[0.02] w-full text-center">
         <span className="font-serif uppercase text-[15vw] leading-none font-bold tracking-tighter text-white">
