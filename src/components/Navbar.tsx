@@ -293,26 +293,28 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
 
                   {/* MINI CARD */}
                   {profileData.tier && profileData.tier !== 'None' ? (
-                    <div className="relative aspect-[1.586/1] w-full rounded-xl p-4 overflow-hidden border border-white/5 flex flex-col justify-between">
+                    <div className="relative aspect-[1.586/1] w-full rounded-2xl p-5 overflow-hidden border border-white/10 flex flex-col justify-between shadow-lg">
                       {profileData.tier === 'Gold' ? (
-                        <div className="absolute inset-0 bg-gradient-to-br from-[#2c2214]/60 to-[#0a0806]" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#3b2b16]/70 via-[#18130b] to-[#070503]" />
                       ) : (
-                        <div className="absolute inset-0 bg-gradient-to-br from-[#1e2229]/60 to-[#07080a]" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#282d36]/70 via-[#13151b] to-[#050608]" />
                       )}
                       <div className="relative flex justify-between">
-                        <span className="text-[7px] tracking-[0.25em] text-white/80">ICC CLUB</span>
-                        <span className="text-[7px] tracking-[0.25em] text-gold uppercase">{profileData.tier}</span>
+                        <span className="text-[8px] tracking-[0.25em] font-sans text-white/80 font-bold">ICC CLUB MEMBER</span>
+                        <span className="text-[8px] tracking-[0.25em] font-sans text-gold uppercase font-bold">{profileData.tier}</span>
                       </div>
                       <div className="relative text-left">
-                        <span className="text-[7px] text-white/30 tracking-widest uppercase block">Member ID</span>
+                        <span className="text-[8px] text-white/40 tracking-widest uppercase block mb-0.5">Member ID</span>
                         <span className="font-mono text-sm tracking-wider text-white">ICC-{profileData.id.slice(-6).toUpperCase()}</span>
                       </div>
                     </div>
                   ) : (
-                    <div className="relative aspect-[1.586/1] w-full rounded-xl p-4 overflow-hidden border border-white/5 flex flex-col items-center justify-center text-center bg-white/[0.01]">
-                      <Lock className="text-gold/45 mb-2" size={16} />
-                      <p className="text-[9px] uppercase tracking-wider text-ivory/50">Membership Card Locked</p>
-                      <p className="text-[8px] text-ivory/30 mt-1 max-w-[180px] leading-relaxed">Your digital member card will be activated once assigned by the administrator.</p>
+                    <div className="relative aspect-[1.586/1] w-full rounded-2xl p-5 overflow-hidden border border-gold/15 flex flex-col items-center justify-center text-center bg-gradient-to-br from-[#1c160c]/40 via-[#0e0b06]/80 to-[#070503]/90 shadow-inner">
+                      <div className="w-10 h-10 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center text-gold mb-2.5">
+                        <Lock size={16} />
+                      </div>
+                      <p className="text-[10px] font-sans font-bold uppercase tracking-widest text-gold mb-1">Membership Card Locked</p>
+                      <p className="text-[9px] text-white/60 max-w-[210px] leading-relaxed">Your digital member card will be activated once assigned by the administrator.</p>
                     </div>
                   )}
 
@@ -322,35 +324,41 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
                       ? profileData.orders 
                       : [{ trackingNumber: "ICC-849204", status: "Shipped" }];
                     return (
-                      <div className="bg-white/[0.02] border border-white/5 rounded-xl p-3 text-left">
-                        <div className="flex justify-between items-center text-[8px] uppercase tracking-widest text-ivory/40 mb-1">
+                      <div className="bg-[#141414] border border-white/10 rounded-2xl p-4 text-left shadow-sm flex flex-col gap-1.5">
+                        <div className="flex justify-between items-center text-[9px] uppercase tracking-widest text-white/50">
                           <span>Active Order</span>
-                          <span className="text-gold font-bold">{displayOrders[0].status}</span>
+                          <span className={`px-2.5 py-0.5 text-[8px] font-bold rounded-full border ${
+                            displayOrders[0].status === 'Delivered' 
+                              ? 'border-green-500/20 bg-green-500/5 text-green-400' 
+                              : 'border-gold/25 bg-gold/5 text-gold'
+                          }`}>
+                            {displayOrders[0].status}
+                          </span>
                         </div>
-                        <p className="font-mono text-[9px] text-white tracking-widest truncate">{displayOrders[0].trackingNumber}</p>
+                        <p className="font-mono text-[10px] text-white/95 tracking-widest truncate">{displayOrders[0].trackingNumber}</p>
                       </div>
                     );
                   })()}
 
                   {/* BUTTONS */}
-                  <div className="grid grid-cols-2 gap-2 mt-2">
+                  <div className="grid grid-cols-2 gap-2.5 mt-1">
                     <button
                       onClick={() => {
                         setShowDropdown(false);
                         setShowModal(true);
                       }}
-                      className="py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-lg text-[9px] uppercase tracking-widest font-semibold flex items-center justify-center gap-1.5 transition-all border border-white/5"
+                      className="py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl text-[9px] uppercase tracking-widest font-bold flex items-center justify-center gap-2 transition-all border border-white/10 cursor-pointer"
                     >
-                      <Settings size={10} /> Profile / Saved
+                      <Settings size={11} /> Profile / Saved
                     </button>
                     <button
                       onClick={() => {
                         setShowDropdown(false);
                         signOut({ callbackUrl: '/' });
                       }}
-                      className="py-2.5 bg-red-950/10 hover:bg-red-950/20 text-red-400 border border-red-500/10 rounded-lg text-[9px] uppercase tracking-widest font-semibold flex items-center justify-center gap-1.5 transition-all"
+                      className="py-3 bg-red-950/15 hover:bg-red-950/35 text-red-400 border border-red-500/20 rounded-xl text-[9px] uppercase tracking-widest font-bold flex items-center justify-center gap-2 transition-all cursor-pointer"
                     >
-                      <LogOut size={10} /> Log Out
+                      <LogOut size={11} /> Log Out
                     </button>
                   </div>
                 </motion.div>
