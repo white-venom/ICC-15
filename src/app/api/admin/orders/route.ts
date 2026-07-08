@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/utils/prisma";
-import { prismaInv } from "@/utils/prisma-inventory";
 
 export async function GET() {
   try {
@@ -53,13 +52,13 @@ export async function PATCH(request: Request) {
         const [productId, size] = item.id.split('-');
         const colorName = item.colorName;
         
-        let inv = await prismaInv.inventory.findUnique({
+        let inv = await prisma.inventory.findUnique({
           where: { productId_size_colorName: { productId, size, colorName } }
         });
 
         // Initialize default stock level of 3 if it doesn't exist
         if (!inv) {
-          inv = await prismaInv.inventory.create({
+          inv = await prisma.inventory.create({
             data: { productId, size, colorName, stock: 3 }
           });
         }
@@ -77,7 +76,7 @@ export async function PATCH(request: Request) {
         const [productId, size] = item.id.split('-');
         const colorName = item.colorName;
 
-        const updatedInv = await prismaInv.inventory.update({
+        const updatedInv = await prisma.inventory.update({
           where: { productId_size_colorName: { productId, size, colorName } },
           data: { stock: { decrement: item.quantity } }
         });

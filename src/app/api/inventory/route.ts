@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prismaInv } from "@/utils/prisma-inventory";
+import { prisma } from "@/utils/prisma";
 
 export async function GET(request: Request) {
   try {
@@ -10,14 +10,14 @@ export async function GET(request: Request) {
 
     if (productId && size && colorName) {
       // Find or create default stock level for this item in the inventory database
-      let inv = await prismaInv.inventory.findUnique({
+      let inv = await prisma.inventory.findUnique({
         where: {
           productId_size_colorName: { productId, size, colorName }
         }
       });
 
       if (!inv) {
-        inv = await prismaInv.inventory.create({
+        inv = await prisma.inventory.create({
           data: {
             productId,
             size,
@@ -31,7 +31,7 @@ export async function GET(request: Request) {
     }
 
     // Get all inventory levels
-    const allInventory = await prismaInv.inventory.findMany();
+    const allInventory = await prisma.inventory.findMany();
     return NextResponse.json(allInventory);
   } catch (error) {
     console.error("GET_INVENTORY_ERROR", error);
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
       return new NextResponse("Missing Fields", { status: 400 });
     }
 
-    const inv = await prismaInv.inventory.upsert({
+    const inv = await prisma.inventory.upsert({
       where: {
         productId_size_colorName: { productId, size, colorName }
       },

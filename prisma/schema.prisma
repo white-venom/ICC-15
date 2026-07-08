@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -88,5 +88,15 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model Inventory {
+  id        String @id @default(cuid())
+  productId String // from products.json (e.g., "white")
+  size      String // size label (e.g., "40")
+  colorName String // e.g., "Ivory White"
+  stock     Int    @default(5)
+
+  @@unique([productId, size, colorName])
 }
 

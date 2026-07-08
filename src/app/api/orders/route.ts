@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/utils/authOptions";
 import { prisma } from "@/utils/prisma";
-import { prismaInv } from "@/utils/prisma-inventory";
 
 export async function GET(request: Request) {
   try {
@@ -78,14 +77,14 @@ export async function POST(request: Request) {
       const [productId, size] = item.id.split('-');
       const colorName = item.colorName;
 
-      let inv = await prismaInv.inventory.findUnique({
+      let inv = await prisma.inventory.findUnique({
         where: {
           productId_size_colorName: { productId, size, colorName }
         }
       });
 
       if (!inv) {
-        inv = await prismaInv.inventory.create({
+        inv = await prisma.inventory.create({
           data: {
             productId,
             size,
