@@ -15,7 +15,7 @@ interface NavbarProps {
   onCartClick: () => void;
 }
 
-const NAV_LEFT  = ['Home', 'Collection', 'Craftsmanship', 'Journal'];
+const NAV_LEFT  = ['Home', 'Collection', 'Craftsmanship'];
 const NAV_RIGHT: string[] = [];
 
 export default function Navbar({ cartCount, onCartClick }: NavbarProps) {

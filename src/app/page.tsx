@@ -7,6 +7,7 @@ import ReviewSection from '@/components/ReviewSection';
 import BrandCreed from '@/components/BrandCreed';
 import ClubPrivileges from '@/components/ClubPrivileges';
 import LoyaltyTiers from '@/components/LoyaltyTiers';
+import JournalSection from '@/components/JournalSection';
 import { useRouter } from 'next/navigation';
 import { useAppContext } from '@/context/AppContext';
 import { TRANSLATIONS } from '@/utils/translations';
@@ -170,6 +171,9 @@ export default function Home() {
 
       {/* ── LOYALTY TIERS SECTION ────────────────────── */}
       <LoyaltyTiers />
+
+      {/* ── JOURNAL SECTION ──────────────────────────── */}
+      <JournalSection />
 
       {/* ── REVIEWS SECTION ──────────────────────────── */}
       <ReviewSection />
