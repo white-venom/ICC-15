@@ -30,7 +30,7 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
   
   // Profile dropdown and modal states
   const [showDropdown, setShowDropdown] = useState(false);
-  const [showModal, setShowModal]       = useState(false);
+  const [activeModal, setActiveModal] = useState<'profile' | 'history' | 'benefits' | null>(null);
   const [profileData, setProfileData]   = useState<any>(null);
   const [editName, setEditName]         = useState('');
   const [updating, setUpdating]         = useState(false);
@@ -116,7 +116,7 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
         image: product.image
       });
       setShowDropdown(false);
-      setShowModal(false);
+      setActiveModal(null);
       router.push('/checkout');
     }
   };
@@ -357,7 +357,7 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
                     <button
                       onClick={() => {
                         setShowDropdown(false);
-                        setShowModal(true);
+                        setActiveModal('history');
                       }}
                       className="py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl text-[9px] uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 transition-all border border-white/10 cursor-pointer"
                     >
@@ -366,7 +366,7 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
                     <button
                       onClick={() => {
                         setShowDropdown(false);
-                        router.push('/#loyalty');
+                        setActiveModal('benefits');
                       }}
                       className="py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl text-[9px] uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 transition-all border border-white/10 cursor-pointer"
                     >
@@ -379,7 +379,7 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
                     <button
                       onClick={() => {
                         setShowDropdown(false);
-                        setShowModal(true);
+                        setActiveModal('profile');
                       }}
                       className="py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl text-[9px] uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 transition-all border border-white/10 cursor-pointer"
                     >
@@ -431,7 +431,7 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
       </AnimatePresence>
       {/* BIG BOX: Center Profile Details & Edit Modal */}
       <AnimatePresence>
-        {showModal && profileData && (
+        {activeModal && profileData && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
@@ -441,229 +441,354 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
             >
               {/* Close Button */}
               <button
-                onClick={() => setShowModal(false)}
-                className="absolute top-6 right-6 text-white/40 hover:text-white transition-colors"
+                onClick={() => setActiveModal(null)}
+                className="absolute top-6 right-6 text-white/40 hover:text-white transition-colors cursor-pointer"
               >
                 <X size={20} />
               </button>
 
-              <div className="border-b border-white/5 pb-4">
-                <h3 className="font-serif text-2xl uppercase tracking-wider text-white">Atelier Member Profile</h3>
-                <p className="text-[10px] text-gold tracking-widest uppercase mt-1">ICC-{profileData.id.slice(-6).toUpperCase()} • {profileData.tier && profileData.tier !== 'None' ? `${profileData.tier} Tier` : 'Pending Activation'}</p>
-              </div>
+              {/* MODAL 1: PROFILE SETTINGS */}
+              {activeModal === 'profile' && (
+                <>
+                  <div className="border-b border-white/5 pb-4">
+                    <h3 className="font-serif text-2xl uppercase tracking-wider text-white">Atelier Member Profile</h3>
+                    <p className="text-[10px] text-gold tracking-widest uppercase mt-1">ICC-{profileData.id.slice(-6).toUpperCase()} • {profileData.tier && profileData.tier !== 'None' ? `${profileData.tier} Tier` : 'Pending Activation'}</p>
+                  </div>
 
-              {/* ACTIVE ORDER TRACKING PROGRESS BAR (Visual Steps) */}
-              {(() => {
-                const activeOrders = profileData.orders && profileData.orders.length > 0 
-                  ? profileData.orders 
-                  : [
-                      {
-                        id: "mock-active",
-                        trackingNumber: "ICC-849204",
-                        totalPrice: 220,
-                        status: "Shipped",
-                        createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-                        items: JSON.stringify([
-                          {
-                            id: "black-40",
-                            name: "The Onyx Statement",
-                            quantity: 1,
-                            price: 220,
-                            colorName: "Jet Black"
-                          }
-                        ])
-                      }
-                    ];
-                const active = activeOrders.find((o: any) => o.status === 'Processing' || o.status === 'Shipped');
-                
-                if (!active) return null;
-                
-                return (
-                  <div className="bg-white/[0.01] border border-white/5 rounded-2xl p-5 space-y-5">
-                    <div className="flex justify-between items-center border-b border-white/5 pb-3">
-                      <div>
-                        <span className="text-[8px] uppercase tracking-widest text-ivory/40">Current Order Tracking</span>
-                        <h4 className="font-mono text-xs text-gold tracking-widest mt-0.5">{active.trackingNumber}</h4>
-                      </div>
-                      <span className="px-2.5 py-0.5 rounded-full bg-gold/10 border border-gold/20 text-gold text-[8px] uppercase tracking-widest font-semibold">
-                        Status: {active.status}
-                      </span>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* Left Column: Edit Details */}
+                    <div className="space-y-4">
+                      <h4 className="text-[10px] uppercase tracking-widest text-white/50 font-bold border-b border-white/5 pb-2">Personal Settings</h4>
+                      <form onSubmit={handleUpdateProfile} className="space-y-4">
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[9px] uppercase tracking-widest text-ivory/40">Full Name</label>
+                          <input
+                            type="text"
+                            required
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none transition-colors text-xs"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[9px] uppercase tracking-widest text-ivory/40 font-semibold">Email Address</label>
+                          <input
+                            type="email"
+                            disabled
+                            value={profileData.email}
+                            className="w-full bg-[#161616] border border-white/5 opacity-50 rounded-xl px-4 py-3 text-ivory/60 text-xs focus:outline-none"
+                          />
+                        </div>
+                        <button
+                          type="submit"
+                          disabled={updating}
+                          className="w-full py-3 bg-gold text-[#050505] font-bold text-[10px] uppercase tracking-widest rounded-xl hover:bg-white transition-colors flex justify-center items-center gap-2 cursor-pointer"
+                        >
+                          {updating ? 'Updating...' : 'Save Changes'}
+                        </button>
+                      </form>
                     </div>
 
-                    {/* Progress Steps */}
-                    <div className="grid grid-cols-3 relative py-2">
-                      <div className="absolute top-5 left-[16.6%] right-[16.6%] h-0.5 bg-white/10" />
+                    {/* Right Column: Wishlist / Saved Items */}
+                    <div className="space-y-4">
+                      <h4 className="text-[10px] uppercase tracking-widest text-white/50 font-bold border-b border-white/5 pb-2">Saved Wishlist</h4>
                       
-                      <div className="flex flex-col items-center text-center relative z-10">
-                        <CheckCircle2 className="w-6 h-6 text-gold bg-[#0c0c0c] rounded-full p-0.5" />
-                        <span className="text-[8px] uppercase tracking-widest mt-1.5 font-bold text-white">Processing</span>
-                      </div>
-
-                      <div className="flex flex-col items-center text-center relative z-10">
-                        {active.status === 'Shipped' || active.status === 'Delivered' ? (
-                          <CheckCircle2 className="w-6 h-6 text-gold bg-[#0c0c0c] rounded-full p-0.5" />
-                        ) : (
-                          <Circle className="w-6 h-6 text-ivory/20 bg-[#0c0c0c] rounded-full p-1" />
-                        )}
-                        <span className={`text-[8px] uppercase tracking-widest mt-1.5 ${active.status !== 'Processing' ? 'text-white font-bold' : 'text-ivory/30'}`}>Shipped</span>
-                      </div>
-
-                      <div className="flex flex-col items-center text-center relative z-10">
-                        {active.status === 'Delivered' ? (
-                          <CheckCircle2 className="w-6 h-6 text-gold bg-[#0c0c0c] rounded-full p-0.5" />
-                        ) : (
-                          <Circle className="w-6 h-6 text-ivory/20 bg-[#0c0c0c] rounded-full p-1" />
-                        )}
-                        <span className={`text-[8px] uppercase tracking-widest mt-1.5 ${active.status === 'Delivered' ? 'text-white font-bold' : 'text-ivory/30'}`}>Delivered</span>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-between items-center pt-2 text-[9px] text-ivory/40">
-                      <span>Order Placed: {new Date(active.createdAt).toLocaleDateString()}</span>
-                      <a
-                        href={`https://wa.me/919917128864?text=Hello,%20I'd%20like%20to%20track%20my%20order%20${active.trackingNumber}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-gold hover:underline uppercase tracking-widest font-semibold"
-                      >
-                        Track via WhatsApp →
-                      </a>
+                      {wishlistItems.length === 0 ? (
+                        <p className="text-xs text-ivory/30 italic">No saved items found. Browse our gallery to add pieces to your wishlist.</p>
+                      ) : (
+                        <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
+                          {wishlistItems.map((product) => (
+                            <div key={product.id} className="flex justify-between items-center bg-white/[0.02] border border-white/5 rounded-xl p-3">
+                              <div className="flex items-center gap-3">
+                                <img src={product.image} alt={product.name} className="w-12 h-12 object-contain mix-blend-luminosity animate-pulse-slow" />
+                                <div>
+                                  <p className="text-xs font-serif text-white font-semibold">{product.name}</p>
+                                  <p className="text-[9px] text-gold">{formatPrice(product.price)}</p>
+                                </div>
+                              </div>
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => buySavedItem(product.id)}
+                                  className="px-3 py-1.5 bg-gold text-[#050505] text-[8px] uppercase tracking-widest font-bold rounded-lg hover:bg-white transition-colors cursor-pointer"
+                                >
+                                  Buy
+                                </button>
+                                <button
+                                  onClick={() => removeSavedItem(product.id)}
+                                  className="p-1.5 hover:text-red-400 text-white/40 transition-colors cursor-pointer"
+                                >
+                                  <Heart size={14} fill="red" className="text-red-500" />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
-                );
-              })()}
+                </>
+              )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Left Column: Edit Details */}
-                <div className="space-y-4">
-                  <h4 className="text-[10px] uppercase tracking-widest text-white/50 font-bold border-b border-white/5 pb-2">Personal Settings</h4>
-                  <form onSubmit={handleUpdateProfile} className="space-y-4">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[9px] uppercase tracking-widest text-ivory/40">Full Name</label>
-                      <input
-                        type="text"
-                        required
-                        value={editName}
-                        onChange={(e) => setEditName(e.target.value)}
-                        className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none transition-colors text-xs"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[9px] uppercase tracking-widest text-ivory/40 font-semibold">Email Address</label>
-                      <input
-                        type="email"
-                        disabled
-                        value={profileData.email}
-                        className="w-full bg-[#161616] border border-white/5 opacity-50 rounded-xl px-4 py-3 text-ivory/60 text-xs focus:outline-none"
-                      />
-                    </div>
-                    <button
-                      type="submit"
-                      disabled={updating}
-                      className="w-full py-3 bg-gold text-[#050505] font-bold text-[10px] uppercase tracking-widest rounded-xl hover:bg-white transition-colors flex justify-center items-center gap-2"
-                    >
-                      {updating ? 'Updating...' : 'Save Changes'}
-                    </button>
-                  </form>
-                </div>
+              {/* MODAL 2: ORDER HISTORY */}
+              {activeModal === 'history' && (
+                <>
+                  <div className="border-b border-white/5 pb-4">
+                    <h3 className="font-serif text-2xl uppercase tracking-wider text-white">Atelier Order History</h3>
+                    <p className="text-[10px] text-gold tracking-widest uppercase mt-1">Track status and review past purchases</p>
+                  </div>
 
-                {/* Right Column: Wishlist / Saved Items */}
-                <div className="space-y-4">
-                  <h4 className="text-[10px] uppercase tracking-widest text-white/50 font-bold border-b border-white/5 pb-2">Saved Wishlist</h4>
-                  
-                  {wishlistItems.length === 0 ? (
-                    <p className="text-xs text-ivory/30 italic">No saved items found. Browse our gallery to add pieces to your wishlist.</p>
-                  ) : (
-                    <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
-                      {wishlistItems.map((product) => (
-                        <div key={product.id} className="flex justify-between items-center bg-white/[0.02] border border-white/5 rounded-xl p-3">
-                          <div className="flex items-center gap-3">
-                            <img src={product.image} alt={product.name} className="w-12 h-12 object-contain mix-blend-luminosity animate-pulse-slow" />
-                            <div>
-                              <p className="text-xs font-serif text-white font-semibold">{product.name}</p>
-                              <p className="text-[9px] text-gold">{formatPrice(product.price)}</p>
-                            </div>
+                  {/* ACTIVE ORDER TRACKING PROGRESS BAR (Visual Steps) */}
+                  {(() => {
+                    const activeOrders = profileData.orders && profileData.orders.length > 0 
+                      ? profileData.orders 
+                      : [
+                          {
+                            id: "mock-active",
+                            trackingNumber: "ICC-849204",
+                            totalPrice: 220,
+                            status: "Shipped",
+                            createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+                            items: JSON.stringify([
+                              {
+                                id: "black-40",
+                                name: "The Onyx Statement",
+                                quantity: 1,
+                                price: 220,
+                                colorName: "Jet Black"
+                              }
+                            ])
+                          }
+                        ];
+                    const active = activeOrders.find((o: any) => o.status === 'Processing' || o.status === 'Shipped');
+                    
+                    if (!active) return null;
+                    
+                    return (
+                      <div className="bg-[#141414] border border-white/10 rounded-2xl p-5 space-y-5">
+                        <div className="flex justify-between items-center border-b border-white/5 pb-3">
+                          <div>
+                            <span className="text-[8px] uppercase tracking-widest text-ivory/40">Current Order Tracking</span>
+                            <h4 className="font-mono text-xs text-gold tracking-widest mt-0.5">{active.trackingNumber}</h4>
                           </div>
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => buySavedItem(product.id)}
-                              className="px-3 py-1.5 bg-gold text-[#050505] text-[8px] uppercase tracking-widest font-bold rounded-lg hover:bg-white transition-colors"
-                            >
-                              Buy
-                            </button>
-                            <button
-                              onClick={() => removeSavedItem(product.id)}
-                              className="p-1.5 hover:text-red-400 text-white/40 transition-colors"
-                            >
-                              <Heart size={14} fill="red" className="text-red-500" />
-                            </button>
+                          <span className="px-2.5 py-0.5 rounded-full bg-gold/10 border border-gold/20 text-gold text-[8px] uppercase tracking-widest font-semibold">
+                            Status: {active.status}
+                          </span>
+                        </div>
+
+                        {/* Progress Steps */}
+                        <div className="grid grid-cols-3 relative py-2">
+                          <div className="absolute top-5 left-[16.6%] right-[16.6%] h-0.5 bg-white/10" />
+                          
+                          <div className="flex flex-col items-center text-center relative z-10">
+                            <CheckCircle2 className="w-6 h-6 text-gold bg-[#0c0c0c] rounded-full p-0.5" />
+                            <span className="text-[8px] uppercase tracking-widest mt-1.5 font-bold text-white">Processing</span>
+                          </div>
+
+                          <div className="flex flex-col items-center text-center relative z-10">
+                            {active.status === 'Shipped' || active.status === 'Delivered' ? (
+                              <CheckCircle2 className="w-6 h-6 text-gold bg-[#0c0c0c] rounded-full p-0.5" />
+                            ) : (
+                              <Circle className="w-6 h-6 text-ivory/20 bg-[#0c0c0c] rounded-full p-1" />
+                            )}
+                            <span className={`text-[8px] uppercase tracking-widest mt-1.5 ${active.status !== 'Processing' ? 'text-white font-bold' : 'text-ivory/30'}`}>Shipped</span>
+                          </div>
+
+                          <div className="flex flex-col items-center text-center relative z-10">
+                            {active.status === 'Delivered' ? (
+                              <CheckCircle2 className="w-6 h-6 text-gold bg-[#0c0c0c] rounded-full p-0.5" />
+                            ) : (
+                              <Circle className="w-6 h-6 text-ivory/20 bg-[#0c0c0c] rounded-full p-1" />
+                            )}
+                            <span className={`text-[8px] uppercase tracking-widest mt-1.5 ${active.status === 'Delivered' ? 'text-white font-bold' : 'text-ivory/30'}`}>Delivered</span>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
 
-              {/* Order History bottom section */}
-              <div className="space-y-3 pt-4 border-t border-white/5">
-                <h4 className="text-[10px] uppercase tracking-widest text-white/50 font-bold border-b border-white/5 pb-2">Order History</h4>
-                
-                {(() => {
-                  const displayOrders = profileData.orders && profileData.orders.length > 0 
-                    ? profileData.orders 
-                    : [
-                        {
-                          id: "mock-past",
-                          trackingNumber: "ICC-849204",
-                          totalPrice: 220,
-                          status: "Shipped",
-                          createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-                          items: JSON.stringify([
+                        <div className="flex justify-between items-center pt-2 text-[9px] text-ivory/40">
+                          <span>Order Placed: {new Date(active.createdAt).toLocaleDateString()}</span>
+                          <a
+                            href={`https://wa.me/919917128864?text=Hello,%20I'd%20like%20to%20track%20my%20order%20${active.trackingNumber}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-gold hover:underline uppercase tracking-widest font-semibold"
+                          >
+                            Track via WhatsApp →
+                          </a>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  <div className="space-y-3 pt-2">
+                    <h4 className="text-[10px] uppercase tracking-widest text-white/50 font-bold border-b border-white/5 pb-2">Order History</h4>
+                    
+                    {(() => {
+                      const displayOrders = profileData.orders && profileData.orders.length > 0 
+                        ? profileData.orders 
+                        : [
                             {
-                              id: "black-40",
-                              name: "The Onyx Statement",
-                              quantity: 1,
-                              price: 220,
-                              colorName: "Jet Black"
+                              id: "mock-past",
+                              trackingNumber: "ICC-849204",
+                              totalPrice: 220,
+                              status: "Shipped",
+                              createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+                              items: JSON.stringify([
+                                {
+                                  id: "black-40",
+                                  name: "The Onyx Statement",
+                                  quantity: 1,
+                                  price: 220,
+                                  colorName: "Jet Black"
+                                }
+                              ])
                             }
-                          ])
-                        }
-                      ];
+                          ];
 
-                  return (
-                    <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
-                      {displayOrders.map((order: any) => {
-                        const orderItems = JSON.parse(order.items || '[]');
-                        return (
-                          <div key={order.id} className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white/[0.01] border border-white/5 rounded-xl p-4 gap-2 hover:border-white/10 transition-colors">
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="font-mono text-[10px] text-white tracking-widest">{order.trackingNumber}</span>
-                                <span className="text-[9px] text-ivory/40">|</span>
-                                <span className="text-[9px] text-ivory/40">{new Date(order.createdAt).toLocaleDateString()}</span>
+                      return (
+                        <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+                          {displayOrders.map((order: any) => {
+                            const orderItems = JSON.parse(order.items || '[]');
+                            return (
+                              <div key={order.id} className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white/[0.01] border border-white/5 rounded-xl p-4 gap-2 hover:border-white/10 transition-colors">
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-mono text-[10px] text-white tracking-widest">{order.trackingNumber}</span>
+                                    <span className="text-[9px] text-ivory/40">|</span>
+                                    <span className="text-[9px] text-ivory/40">{new Date(order.createdAt).toLocaleDateString()}</span>
+                                  </div>
+                                  <div className="mt-1 space-y-0.5">
+                                    {orderItems.map((item: any, idx: number) => (
+                                      <p key={idx} className="text-[10px] text-ivory/60">
+                                        {item.quantity}x {item.name} ({item.colorName})
+                                      </p>
+                                    ))}
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <span className="font-serif text-xs text-gold">{formatPrice(order.totalPrice)}</span>
+                                  <span className={`text-[8px] uppercase tracking-widest px-2.5 py-0.5 rounded-full border ${order.status === 'Delivered' ? 'border-green-500/20 bg-green-500/5 text-green-400' : 'border-gold/20 bg-gold/5 text-gold'}`}>
+                                    {order.status}
+                                  </span>
+                                </div>
                               </div>
-                              <div className="mt-1 space-y-0.5">
-                                {orderItems.map((item: any, idx: number) => (
-                                  <p key={idx} className="text-[10px] text-ivory/60">
-                                    {item.quantity}x {item.name} ({item.colorName})
-                                  </p>
-                                ))}
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <span className="font-serif text-xs text-gold">{formatPrice(order.totalPrice)}</span>
-                              <span className={`text-[8px] uppercase tracking-widest px-2.5 py-0.5 rounded-full border ${order.status === 'Delivered' ? 'border-green-500/20 bg-green-500/5 text-green-400' : 'border-gold/20 bg-gold/5 text-gold'}`}>
-                                {order.status}
-                              </span>
-                            </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </>
+              )}
+
+              {/* MODAL 3: CARD BENEFITS */}
+              {activeModal === 'benefits' && (
+                <>
+                  <div className="border-b border-white/5 pb-4">
+                    <h3 className="font-serif text-2xl uppercase tracking-wider text-white">Membership Privileges</h3>
+                    <p className="text-[10px] text-gold tracking-widest uppercase mt-1">Unlock tailored club access and reward tiers</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                    {/* Left: Card View */}
+                    <div className="flex flex-col items-center gap-4">
+                      {profileData.tier && profileData.tier !== 'None' ? (
+                        <div className="relative aspect-[1.586/1] w-full max-w-[340px] rounded-2xl p-5 overflow-hidden border border-white/10 flex flex-col justify-between shadow-xl">
+                          {profileData.tier === 'Gold' ? (
+                            <div className="absolute inset-0 bg-gradient-to-br from-[#3b2b16]/70 via-[#18130b] to-[#070503]" />
+                          ) : (
+                            <div className="absolute inset-0 bg-gradient-to-br from-[#282d36]/70 via-[#13151b] to-[#050608]" />
+                          )}
+                          <div className="relative flex justify-between">
+                            <span className="text-[8px] tracking-[0.25em] font-sans text-white/80 font-bold">ICC CLUB MEMBER</span>
+                            <span className="text-[8px] tracking-[0.25em] font-sans text-gold uppercase font-bold">{profileData.tier}</span>
                           </div>
-                        );
-                      })}
+                          <div className="relative text-left">
+                            <span className="text-[8px] text-white/40 tracking-widest uppercase block mb-0.5">Member ID</span>
+                            <span className="font-mono text-sm tracking-wider text-white">ICC-{profileData.id.slice(-6).toUpperCase()}</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="relative aspect-[1.586/1] w-full max-w-[340px] rounded-2xl p-5 overflow-hidden border border-gold/15 flex flex-col items-center justify-center text-center bg-gradient-to-br from-[#1c160c]/40 via-[#0e0b06]/80 to-[#070503]/90 shadow-inner">
+                          <div className="w-10 h-10 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center text-gold mb-2.5">
+                            <Lock size={16} />
+                          </div>
+                          <p className="text-[10px] font-sans font-bold uppercase tracking-widest text-gold mb-1">Membership Card Locked</p>
+                          <p className="text-[9px] text-white/60 max-w-[210px] leading-relaxed">Your digital member card will be activated once assigned by the administrator.</p>
+                        </div>
+                      )}
+                      <p className="text-[10px] text-ivory/50 uppercase tracking-wider text-center">
+                        Current Level: <span className="text-gold font-bold">{profileData.tier || 'None'}</span>
+                      </p>
                     </div>
-                  );
-                })()}
-              </div>
+
+                    {/* Right: Benefits details */}
+                    <div className="space-y-4">
+                      <h4 className="text-[11px] uppercase tracking-widest text-white/50 font-bold border-b border-white/5 pb-2">
+                        {profileData.tier === 'Gold' ? 'Gold Tier Benefits' : profileData.tier === 'Silver' ? 'Silver Tier Benefits' : 'How to Unlock Membership'}
+                      </h4>
+
+                      {profileData.tier === 'Gold' ? (
+                        <ul className="space-y-3 font-sans text-xs text-ivory/80">
+                          <li className="flex gap-2.5 items-start">
+                            <span className="text-gold mt-0.5">✔</span>
+                            <span><strong>10% Lifetime Reward Credits</strong> on all purchases.</span>
+                          </li>
+                          <li className="flex gap-2.5 items-start">
+                            <span className="text-gold mt-0.5">✔</span>
+                            <span><strong>Dedicated Personal Atelier Assistant</strong> via direct WhatsApp line.</span>
+                          </li>
+                          <li className="flex gap-2.5 items-start">
+                            <span className="text-gold mt-0.5">✔</span>
+                            <span><strong>Private Trunk Shows:</strong> Exclusive invitations to local events and previews.</span>
+                          </li>
+                          <li className="flex gap-2.5 items-start">
+                            <span className="text-gold mt-0.5">✔</span>
+                            <span><strong>Complimentary Alterations:</strong> Lifetime tailoring and custom-fit care.</span>
+                          </li>
+                          <li className="flex gap-2.5 items-start">
+                            <span className="text-gold mt-0.5">✔</span>
+                            <span><strong>Express Delivery:</strong> Free worldwide priority shipping and returns.</span>
+                          </li>
+                        </ul>
+                      ) : profileData.tier === 'Silver' ? (
+                        <ul className="space-y-3 font-sans text-xs text-ivory/80">
+                          <li className="flex gap-2.5 items-start">
+                            <span className="text-gold mt-0.5">✔</span>
+                            <span><strong>5% Lifetime Reward Credits</strong> on all purchases.</span>
+                          </li>
+                          <li className="flex gap-2.5 items-start">
+                            <span className="text-gold mt-0.5">✔</span>
+                            <span><strong>24-Hour Early Access</strong> to micro-capsule collection releases.</span>
+                          </li>
+                          <li className="flex gap-2.5 items-start">
+                            <span className="text-gold mt-0.5">✔</span>
+                            <span>Upgrade to <strong>Gold</strong> by reaching a spend milestone of ₹30,000 / $300.</span>
+                          </li>
+                        </ul>
+                      ) : (
+                        <div className="space-y-3 text-xs text-ivory/70 leading-relaxed">
+                          <p>
+                            Your membership status is currently in the queue. Memberships are unlocked automatically as you complete shop purchases:
+                          </p>
+                          <div className="p-3.5 bg-[#141414] border border-white/5 rounded-xl flex flex-col gap-2 shadow-sm">
+                            <div className="flex justify-between items-center text-[10px]">
+                              <span className="text-white font-bold uppercase tracking-wider">Silver Membership</span>
+                              <span className="text-gold font-mono font-bold">₹10,000 spend</span>
+                            </div>
+                            <p className="text-[9px] text-ivory/50">Unlocks 5% lifetime cashbacks and 24h early access to new releases.</p>
+                          </div>
+                          <div className="p-3.5 bg-[#141414] border border-white/5 rounded-xl flex flex-col gap-2 shadow-sm">
+                            <div className="flex justify-between items-center text-[10px]">
+                              <span className="text-white font-bold uppercase tracking-wider">Gold Membership</span>
+                              <span className="text-gold font-mono font-bold">₹30,000 spend</span>
+                            </div>
+                            <p className="text-[9px] text-ivory/50">Unlocks 10% lifetime credits, personal assistant, and free custom tailoring.</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
             </motion.div>
           </div>
         )}
