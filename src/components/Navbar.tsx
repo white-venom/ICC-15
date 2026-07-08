@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -35,6 +35,28 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
   const [editName, setEditName]         = useState('');
   const [updating, setUpdating]         = useState(false);
   const [wishlistItems, setWishlistItems] = useState<any[]>([]);
+
+  // Refs and effect to close dropdown on clicking outside
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const userButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current && 
+        !dropdownRef.current.contains(event.target as Node) &&
+        userButtonRef.current &&
+        !userButtonRef.current.contains(event.target as Node)
+      ) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     if (session) {
@@ -257,6 +279,7 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
           {/* Profile / Auth Button with dropdown trigger */}
           <div className="relative">
             <button 
+              ref={userButtonRef}
               onClick={() => {
                 if (session) {
                   setShowDropdown(!showDropdown);
@@ -273,6 +296,7 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
             <AnimatePresence>
               {showDropdown && profileData && (
                 <motion.div
+                  ref={dropdownRef}
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 15 }}
@@ -432,12 +456,16 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
       {/* BIG BOX: Center Profile Details & Edit Modal */}
       <AnimatePresence>
         {activeModal && profileData && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div 
+            onClick={() => setActiveModal(null)}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md cursor-pointer"
+          >
             <motion.div
+              onClick={(e) => e.stopPropagation()}
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-[#0c0c0c] border border-white/10 rounded-3xl p-6 md:p-8 w-full max-w-3xl max-h-[85vh] overflow-y-auto relative text-left shadow-2xl space-y-6"
+              className="bg-[#0c0c0c] border border-white/10 rounded-3xl p-6 md:p-8 w-full max-w-3xl max-h-[85vh] overflow-y-auto relative text-left shadow-2xl space-y-6 cursor-default"
             >
               {/* Close Button */}
               <button
