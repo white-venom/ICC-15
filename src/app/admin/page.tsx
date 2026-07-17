@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Edit2, Trash2, Save, X, Settings, AlertTriangle, ArrowLeft, Shirt, ShoppingBag, Users, Calendar, BookOpen, Clock, User, Tag, ShieldCheck } from 'lucide-react';
+import { Plus, Edit2, Trash2, Save, X, Settings, AlertTriangle, ArrowLeft, Shirt, ShoppingBag, Users, Calendar, BookOpen, Clock, User, Tag, ShieldCheck, CreditCard, FileText } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import CARDS from '@/utils/cards.json';
 
 interface ProductDetail {
   id: string;
@@ -68,6 +69,7 @@ interface Member {
   name: string | null;
   email: string | null;
   tier: string;
+  cardNumber?: string | null;
   createdAt: string;
   _count: {
     orders: number;
@@ -106,7 +108,7 @@ interface InventoryItem {
 
 export default function AdminPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'shirts' | 'orders' | 'members' | 'journals' | 'inventory'>('shirts');
+  const [activeTab, setActiveTab] = useState<'shirts' | 'orders' | 'members' | 'journals' | 'inventory' | 'cards'>('shirts');
   
   // Database states
   const [products, setProducts] = useState<ProductDetail[]>([]);
@@ -114,6 +116,8 @@ export default function AdminPage() {
   const [members, setMembers] = useState<Member[]>([]);
   const [journals, setJournals] = useState<JournalDetail[]>([]);
   const [inventoryList, setInventoryList] = useState<InventoryItem[]>([]);
+  const [cardsList, setCardsList] = useState<any[]>([]);
+  const [cardSummary, setCardSummary] = useState({ total: 0, assigned: 0, left: 0 });
   const [loading, setLoading] = useState(true);
   
   // Modals & UI states
@@ -122,6 +126,7 @@ export default function AdminPage() {
   
   const [editingJournal, setEditingJournal] = useState<JournalDetail | null>(null);
   const [isAddingJournal, setIsAddingJournal] = useState(false);
+  const [viewingInvoice, setViewingInvoice] = useState<Order | null>(null);
 
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -179,7 +184,7 @@ export default function AdminPage() {
     fetchData();
   }, [activeTab]);
 
-  const fetchData = async () => {
+  async function fetchData() {
     setLoading(true);
     setError('');
     try {
@@ -213,7 +218,7 @@ export default function AdminPage() {
         // Map values into tempStocks for editing
         const stocksMap: Record<string, number> = {};
         prodData.forEach((p: ProductDetail) => {
-          const sizes = ['38', '39', '40', '41', '42', '43'];
+          const sizes = p.sizes && p.sizes.length > 0 ? p.sizes : ['38', '39', '40', '41', '42', '43', '44'];
           sizes.forEach((s) => {
             const key = `${p.id}-${s}-${p.colorName}`;
             const existing = invData.find((item: any) => item.productId === p.id && item.size === s && item.colorName === p.colorName);
@@ -221,6 +226,11 @@ export default function AdminPage() {
           });
         });
         setTempStocks(stocksMap);
+      } else if (activeTab === 'cards') {
+        const res = await fetch('/api/admin/cards');
+        const data = await res.json();
+        setCardsList(data.cards);
+        setCardSummary(data.summary);
       }
     } catch (err) {
       console.error(err);
@@ -482,7 +492,8 @@ export default function AdminPage() {
         body: JSON.stringify({ id, tier: newTier })
       });
       if (res.ok) {
-        setMembers(members.map(m => m.id === id ? { ...m, tier: newTier } : m));
+        const updatedUser = await res.json();
+        setMembers(members.map(m => m.id === id ? { ...m, tier: updatedUser.tier, cardNumber: updatedUser.cardNumber } : m));
         setSuccess('Member tier updated!');
         setTimeout(() => setSuccess(''), 3000);
       }
@@ -716,7 +727,7 @@ export default function AdminPage() {
             onClick={() => setActiveTab('inventory')}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-[10px] uppercase tracking-widest font-semibold transition-all ${activeTab === 'inventory' ? 'bg-gold text-black' : 'bg-[#121212] border border-white/5 text-ivory/60 hover:text-white'}`}
           >
-            <ShieldCheck size={12} /> Stock Levels ({products.length * 6})
+            <ShieldCheck size={12} /> Stock Levels ({products.reduce((acc, p) => acc + (p.sizes?.length || 7), 0)})
           </button>
           <button
             onClick={() => setActiveTab('orders')}
@@ -724,11 +735,17 @@ export default function AdminPage() {
           >
             <ShoppingBag size={12} /> Bespoke Orders ({orders.length})
           </button>
-          <button
+           <button
             onClick={() => setActiveTab('members')}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-[10px] uppercase tracking-widest font-semibold transition-all ${activeTab === 'members' ? 'bg-gold text-black' : 'bg-[#121212] border border-white/5 text-ivory/60 hover:text-white'}`}
           >
             <Users size={12} /> Club Members ({members.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('cards')}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-[10px] uppercase tracking-widest font-semibold transition-all ${activeTab === 'cards' ? 'bg-gold text-black' : 'bg-[#121212] border border-white/5 text-ivory/60 hover:text-white'}`}
+          >
+            <CreditCard size={12} /> Card Registry ({CARDS.length})
           </button>
           <button
             onClick={() => setActiveTab('journals')}
@@ -825,7 +842,7 @@ export default function AdminPage() {
                     </thead>
                     <tbody className="divide-y divide-white/5">
                       {products.map((p) => {
-                        const sizes = ['38', '39', '40', '41', '42', '43'];
+                        const sizes = p.sizes && p.sizes.length > 0 ? p.sizes : ['38', '39', '40', '41', '42', '43', '44'];
                         return sizes.map((s) => {
                           const key = `${p.id}-${s}-${p.colorName}`;
                           const currentVal = tempStocks[key] !== undefined ? tempStocks[key] : 3;
@@ -978,10 +995,18 @@ export default function AdminPage() {
                                 </div>
                               </div>
                             </td>
-                            <td className="py-5 text-right">
+                            <td className="py-5 text-right flex gap-1.5 justify-end">
+                              <button
+                                onClick={() => setViewingInvoice(o)}
+                                className="p-2 border border-white/5 hover:border-gold/20 text-ivory/40 hover:text-gold rounded-lg transition-colors flex items-center gap-1 text-[9px] uppercase tracking-wider font-semibold cursor-pointer"
+                                title="View PDF Invoice"
+                              >
+                                <FileText size={13} /> Invoice
+                              </button>
                               <button
                                 onClick={() => handleDeleteOrder(o.id)}
-                                className="p-2 border border-white/5 hover:border-red-500/20 text-ivory/40 hover:text-red-400 rounded-lg transition-colors"
+                                className="p-2 border border-white/5 hover:border-red-500/20 text-ivory/40 hover:text-red-400 rounded-lg transition-colors cursor-pointer"
+                                title="Delete Order"
                               >
                                 <Trash2 size={13} />
                               </button>
@@ -1009,6 +1034,7 @@ export default function AdminPage() {
                         <th className="pb-4">User</th>
                         <th className="pb-4">Email</th>
                         <th className="pb-4">Tier Status</th>
+                        <th className="pb-4">Card Number</th>
                         <th className="pb-4">Joined Date</th>
                         <th className="pb-4">Activity Stats</th>
                         <th className="pb-4 text-right">Actions</th>
@@ -1037,7 +1063,16 @@ export default function AdminPage() {
                               <option value="Gold">Gold</option>
                             </select>
                           </td>
-                          <td className="py-5 font-sans text-ivory/40 flex items-center gap-1.5 mt-2">
+                          <td className="py-5">
+                            {m.cardNumber ? (
+                              <span className="font-mono text-gold bg-gold/5 px-2 py-1 border border-gold/15 rounded text-[10px] tracking-widest whitespace-nowrap">
+                                {m.cardNumber}
+                              </span>
+                            ) : (
+                              <span className="text-ivory/20">—</span>
+                            )}
+                          </td>
+                          <td className="py-5 font-sans text-ivory/40 flex items-center gap-1.5">
                             <Calendar size={12} /> {new Date(m.createdAt).toLocaleDateString()}
                           </td>
                           <td className="py-5 text-ivory/50">
@@ -1059,6 +1094,102 @@ export default function AdminPage() {
                     </tbody>
                   </table>
                 )}
+              </div>
+            )}
+
+            {/* TAB: CARDS REGISTRY */}
+            {activeTab === 'cards' && (
+              <div className="space-y-8 animate-fadeIn">
+                {/* Metrics Cards Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Metric 1 */}
+                  <div className="bg-[#121212] border border-white/5 rounded-3xl p-6 relative overflow-hidden shadow-xl flex flex-col justify-between">
+                    <div className="space-y-1">
+                      <p className="text-[10px] text-ivory/40 uppercase tracking-widest">Total Cards in Catalog</p>
+                      <h4 className="text-3xl font-serif font-light text-white">{cardSummary.total}</h4>
+                    </div>
+                    <div className="absolute right-4 bottom-4 opacity-5 pointer-events-none">
+                      <CreditCard size={64} className="text-white" />
+                    </div>
+                  </div>
+
+                  {/* Metric 2 */}
+                  <div className="bg-[#121212] border border-white/5 rounded-3xl p-6 relative overflow-hidden shadow-xl flex flex-col justify-between">
+                    <div className="space-y-1">
+                      <p className="text-[10px] text-gold/60 uppercase tracking-widest">Already Assigned</p>
+                      <h4 className="text-3xl font-serif font-light text-gold">{cardSummary.assigned}</h4>
+                    </div>
+                    <div className="absolute right-4 bottom-4 opacity-5 pointer-events-none">
+                      <Users size={64} className="text-gold" />
+                    </div>
+                  </div>
+
+                  {/* Metric 3 */}
+                  <div className="bg-[#121212] border border-white/5 rounded-3xl p-6 relative overflow-hidden shadow-xl flex flex-col justify-between">
+                    <div className="space-y-1">
+                      <p className="text-[10px] text-green-400/60 uppercase tracking-widest">Remaining Available</p>
+                      <h4 className="text-3xl font-serif font-light text-green-400">{cardSummary.left}</h4>
+                    </div>
+                    <div className="absolute right-4 bottom-4 opacity-5 pointer-events-none">
+                      <ShieldCheck size={64} className="text-green-400" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Cards List Table */}
+                <div className="bg-[#121212] border border-white/5 rounded-3xl p-6 md:p-8 overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b border-white/10 text-ivory/40 uppercase tracking-widest text-[9px]">
+                        <th className="pb-4">Card Number</th>
+                        <th className="pb-4">Tier</th>
+                        <th className="pb-4">Access PIN</th>
+                        <th className="pb-4">Validity</th>
+                        <th className="pb-4">Status</th>
+                        <th className="pb-4">Assigned To</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                      {cardsList.map((card, i) => (
+                        <tr key={i} className="hover:bg-white/[0.01]">
+                          <td className="py-4 font-mono text-white text-[11px] tracking-wider font-semibold">
+                            {card.cardNumber}
+                          </td>
+                          <td className="py-4">
+                            <span className={`px-2.5 py-0.5 text-[8px] font-bold rounded-full border ${
+                              card.tier === 'Gold' 
+                                ? 'border-gold/25 bg-gold/5 text-gold' 
+                                : 'border-slate-400/25 bg-slate-400/5 text-slate-300'
+                            }`}>
+                              {card.tier}
+                            </span>
+                          </td>
+                          <td className="py-4 font-mono text-ivory/60">{card.pin}</td>
+                          <td className="py-4 text-ivory/40 tracking-wider font-serif uppercase text-[9px]">{card.validThru}</td>
+                          <td className="py-4">
+                            <span className={`px-2 py-0.5 text-[9px] uppercase tracking-wider font-semibold rounded ${
+                              card.status === 'Assigned' 
+                                ? 'bg-gold/10 text-gold border border-gold/15' 
+                                : 'bg-green-500/5 text-green-400 border border-green-500/10'
+                            }`}>
+                              {card.status}
+                            </span>
+                          </td>
+                          <td className="py-4">
+                            {card.assignedTo ? (
+                              <div className="space-y-0.5">
+                                <p className="font-semibold text-white">{card.assignedTo.name || 'Anonymous'}</p>
+                                <p className="text-[10px] text-ivory/40 font-mono">{card.assignedTo.email}</p>
+                              </div>
+                            ) : (
+                              <span className="text-ivory/20">—</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 
@@ -1143,291 +1274,337 @@ export default function AdminPage() {
                   </div>
                 )}
 
-                <form onSubmit={handleShirtSubmit} className="space-y-6 text-sm">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[9px] uppercase tracking-widest text-ivory/40">Product ID (Slug)*</label>
-                      <input
-                        type="text"
-                        disabled={!isAdding}
-                        required
-                        value={formId}
-                        onChange={(e) => setFormId(e.target.value)}
-                        placeholder="e.g. green"
-                        className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20 disabled:opacity-40"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[9px] uppercase tracking-widest text-ivory/40">Shirt Name*</label>
-                      <input
-                        type="text"
-                        required
-                        value={formName}
-                        onChange={(e) => setFormName(e.target.value)}
-                        placeholder="e.g. The Emerald Statement"
-                        className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[9px] uppercase tracking-widest text-ivory/40">Price (USD)*</label>
-                      <input
-                        type="number"
-                        required
-                        value={formPrice}
-                        onChange={(e) => setFormPrice(Number(e.target.value))}
-                        placeholder="e.g. 215"
-                        className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[9px] uppercase tracking-widest text-ivory/40">Color Label</label>
-                      <input
-                        type="text"
-                        value={formColorName}
-                        onChange={(e) => setFormColorName(e.target.value)}
-                        placeholder="e.g. Emerald Green"
-                        className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[9px] uppercase tracking-widest text-ivory/40">Collection Section*</label>
-                      <select
-                        value={formSection}
-                        onChange={(e) => setFormSection(e.target.value)}
-                        className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none"
-                      >
-                        <option value="bestseller">Most Loved (Bestseller)</option>
-                        <option value="newarrival">Just Landed (New Arrival)</option>
-                        <option value="limited">Exclusive Drop (Limited Edition)</option>
-                      </select>
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[9px] uppercase tracking-widest text-ivory/40">Badge Label</label>
-                      <input
-                        type="text"
-                        value={formBadge}
-                        onChange={(e) => setFormBadge(e.target.value)}
-                        placeholder="e.g. Limited Edition"
-                        className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[9px] uppercase tracking-widest text-ivory/40">Editorial Tagline</label>
-                    <input
-                      type="text"
-                      value={formTagline}
-                      onChange={(e) => setFormTagline(e.target.value)}
-                      placeholder="e.g. Regal Depth. Sovereign Comfort."
-                      className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[9px] uppercase tracking-widest text-ivory/40">Full Description</label>
-                    <textarea
-                      rows={3}
-                      value={formDesc}
-                      onChange={(e) => setFormDesc(e.target.value)}
-                      placeholder="Enter the detailed description..."
-                      className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20 resize-none font-sans"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[9px] uppercase tracking-widest text-ivory/40">Fabric Material</label>
-                      <input
-                        type="text"
-                        value={formMaterial}
-                        onChange={(e) => setFormMaterial(e.target.value)}
-                        placeholder="e.g. 100% Giza Organic Cotton"
-                        className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[9px] uppercase tracking-widest text-ivory/40">Atelier Origin</label>
-                      <input
-                        type="text"
-                        value={formOrigin}
-                        onChange={(e) => setFormOrigin(e.target.value)}
-                        placeholder="e.g. Como, Italy"
-                        className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[9px] uppercase tracking-widest text-ivory/40">Wash &amp; Care Details</label>
-                      <input
-                        type="text"
-                        value={formWashCare}
-                        onChange={(e) => setFormWashCare(e.target.value)}
-                        placeholder="e.g. Dry clean recommended. Low-steam."
-                        className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[9px] uppercase tracking-widest text-ivory/40">Testimonial Quote</label>
-                    <input
-                      type="text"
-                      value={formTestimonial}
-                      onChange={(e) => setFormTestimonial(e.target.value)}
-                      placeholder="e.g. &quot;Incredible drape...&quot; - Marcus L."
-                      className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[9px] uppercase tracking-widest text-ivory/40">Primary Image Asset Path</label>
-                      <div className="flex gap-2">
+                <form onSubmit={handleShirtSubmit} className="space-y-8 text-sm">
+                  {/* Section: Core Information */}
+                  <div className="space-y-4">
+                    <h3 className="text-xs uppercase tracking-widest text-gold font-bold border-b border-white/5 pb-2">1. Core Information</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[9px] uppercase tracking-widest text-ivory/40">Product ID (URL Slug)*</label>
                         <input
                           type="text"
-                          value={formImage}
-                          onChange={(e) => setFormImage(e.target.value)}
-                          placeholder="e.g. /assets/shirt_white.png"
-                          className="flex-1 bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-3 py-3 text-ivory focus:outline-none placeholder-white/20 font-mono text-xs"
+                          disabled={!isAdding}
+                          required
+                          value={formId}
+                          onChange={(e) => setFormId(e.target.value)}
+                          placeholder="e.g., royal-blue"
+                          className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20 disabled:opacity-40"
                         />
-                        <label className="px-4 py-3 bg-[#222] hover:bg-gold hover:text-black rounded-xl text-[10px] uppercase tracking-widest font-semibold cursor-pointer transition-all duration-300 flex items-center justify-center whitespace-nowrap">
-                          Upload File
+                        <span className="text-[8px] text-ivory/30">Unique path in URL (lowercase, hyphens only).</span>
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[9px] uppercase tracking-widest text-ivory/40">Shirt Name*</label>
+                        <input
+                          type="text"
+                          required
+                          value={formName}
+                          onChange={(e) => setFormName(e.target.value)}
+                          placeholder="e.g., The Midnight Indigo"
+                          className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20"
+                        />
+                        <span className="text-[8px] text-ivory/30">Display name in the shop catalog.</span>
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[9px] uppercase tracking-widest text-ivory/40">Price (USD)*</label>
+                        <input
+                          type="number"
+                          required
+                          value={formPrice}
+                          onChange={(e) => setFormPrice(Number(e.target.value))}
+                          placeholder="e.g., 195"
+                          className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20"
+                        />
+                        <span className="text-[8px] text-ivory/30">Retail price in US Dollars.</span>
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[9px] uppercase tracking-widest text-ivory/40">Color Label</label>
+                        <input
+                          type="text"
+                          value={formColorName}
+                          onChange={(e) => setFormColorName(e.target.value)}
+                          placeholder="e.g., Midnight Blue"
+                          className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20"
+                        />
+                        <span className="text-[8px] text-ivory/30">Specific shade name.</span>
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[9px] uppercase tracking-widest text-ivory/40">Collection Category*</label>
+                        <select
+                          value={formSection}
+                          onChange={(e) => setFormSection(e.target.value)}
+                          className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none"
+                        >
+                          <option value="bestseller">Most Loved (Bestseller)</option>
+                          <option value="newarrival">Just Landed (New Arrival)</option>
+                          <option value="limited">Exclusive Drop (Limited Edition)</option>
+                        </select>
+                        <span className="text-[8px] text-ivory/30">Where to place this shirt in the storefront.</span>
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[9px] uppercase tracking-widest text-ivory/40">Card Promo Badge</label>
+                        <input
+                          type="text"
+                          value={formBadge}
+                          onChange={(e) => setFormBadge(e.target.value)}
+                          placeholder="e.g., Rare Silk, Back in Stock"
+                          className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20"
+                        />
+                        <span className="text-[8px] text-ivory/30">Small overlay tag on product card.</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Section: Shop Presentation */}
+                  <div className="space-y-4 pt-4 border-t border-white/5">
+                    <h3 className="text-xs uppercase tracking-widest text-gold font-bold border-b border-white/5 pb-2">2. Shop Presentation</h3>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[9px] uppercase tracking-widest text-ivory/40">Editorial Tagline</label>
+                      <input
+                        type="text"
+                        value={formTagline}
+                        onChange={(e) => setFormTagline(e.target.value)}
+                        placeholder="e.g., Silent luxury. Crafted for leadership."
+                        className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20"
+                      />
+                      <span className="text-[8px] text-ivory/30">A short high-end statement summarizing the vibe.</span>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[9px] uppercase tracking-widest text-ivory/40">Full Description</label>
+                      <textarea
+                        rows={3}
+                        value={formDesc}
+                        onChange={(e) => setFormDesc(e.target.value)}
+                        placeholder="Describe the shirt's build, aesthetic, drape, and story in detail..."
+                        className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20 resize-none font-sans"
+                      />
+                      <span className="text-[8px] text-ivory/30">Detailed overview shown on the main details page.</span>
+                    </div>
+                  </div>
+
+                  {/* Section: Materials & Craftsmanship */}
+                  <div className="space-y-4 pt-4 border-t border-white/5">
+                    <h3 className="text-xs uppercase tracking-widest text-gold font-bold border-b border-white/5 pb-2">3. Materials &amp; Craftsmanship</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[9px] uppercase tracking-widest text-ivory/40">Fabric Material</label>
+                        <input
+                          type="text"
+                          value={formMaterial}
+                          onChange={(e) => setFormMaterial(e.target.value)}
+                          placeholder="e.g., 100% Giza Cotton"
+                          className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20"
+                        />
+                        <span className="text-[8px] text-ivory/30">Specific weave / fabric blend composition.</span>
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[9px] uppercase tracking-widest text-ivory/40">Atelier Origin</label>
+                        <input
+                          type="text"
+                          value={formOrigin}
+                          onChange={(e) => setFormOrigin(e.target.value)}
+                          placeholder="e.g., Como, Italy"
+                          className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20"
+                        />
+                        <span className="text-[8px] text-ivory/30">Where the shirt is manufactured or tailored.</span>
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[9px] uppercase tracking-widest text-ivory/40">Wash &amp; Care Details</label>
+                        <input
+                          type="text"
+                          value={formWashCare}
+                          onChange={(e) => setFormWashCare(e.target.value)}
+                          placeholder="e.g., Dry clean only. Warm iron."
+                          className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20"
+                        />
+                        <span className="text-[8px] text-ivory/30">Quick cleaning guidelines.</span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[9px] uppercase tracking-widest text-ivory/40">Key Features (Comma-separated)</label>
+                      <input
+                        type="text"
+                        value={formFeaturesText}
+                        onChange={(e) => setFormFeaturesText(e.target.value)}
+                        placeholder="e.g., French seams, Pearl buttons, Curved cuffs"
+                        className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20"
+                      />
+                      <span className="text-[8px] text-ivory/30">Individual selling points shown as bullet points.</span>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[9px] uppercase tracking-widest text-ivory/40">Testimonial Quote</label>
+                      <input
+                        type="text"
+                        value={formTestimonial}
+                        onChange={(e) => setFormTestimonial(e.target.value)}
+                        placeholder='e.g., "The softest cotton I have ever worn." - Arthur K.'
+                        className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20"
+                      />
+                      <span className="text-[8px] text-ivory/30">A customer quote highlighting quality.</span>
+                    </div>
+                  </div>
+
+                  {/* Section: Product Images */}
+                  <div className="space-y-4 pt-4 border-t border-white/5">
+                    <h3 className="text-xs uppercase tracking-widest text-gold font-bold border-b border-white/5 pb-2">4. Product Images</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[9px] uppercase tracking-widest text-ivory/40">Primary Image Path</label>
+                        <div className="flex gap-2">
                           <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => handleFileUpload(e, 'primary')}
-                            className="hidden"
+                            type="text"
+                            value={formImage}
+                            onChange={(e) => setFormImage(e.target.value)}
+                            placeholder="e.g., /assets/shirt_white.png"
+                            className="flex-1 bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-3 py-3 text-ivory focus:outline-none placeholder-white/20 font-mono text-xs"
                           />
-                        </label>
+                          <label className="px-4 py-3 bg-[#222] hover:bg-gold hover:text-black rounded-xl text-[10px] uppercase tracking-widest font-semibold cursor-pointer transition-all duration-300 flex items-center justify-center whitespace-nowrap">
+                            Upload File
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => handleFileUpload(e, 'primary')}
+                              className="hidden"
+                            />
+                          </label>
+                        </div>
+                        <span className="text-[8px] text-ivory/30">Main display photo.</span>
                       </div>
-                    </div>
 
-                    <div className="flex flex-col gap-1.5 md:col-span-2">
-                      <label className="text-[9px] uppercase tracking-widest text-ivory/40">Images View Rack (Comma-separated paths)</label>
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          value={formImagesText}
-                          onChange={(e) => setFormImagesText(e.target.value)}
-                          placeholder="e.g. /assets/shirt_white.png, /assets/shirt_white_collar.png"
-                          className="flex-1 bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-3 py-3 text-ivory focus:outline-none placeholder-white/20 font-mono text-xs"
-                        />
-                        <label className="px-4 py-3 bg-[#222] hover:bg-gold hover:text-black rounded-xl text-[10px] uppercase tracking-widest font-semibold cursor-pointer transition-all duration-300 flex items-center justify-center whitespace-nowrap">
-                          Upload View
+                      <div className="flex flex-col gap-1.5 md:col-span-2">
+                        <label className="text-[9px] uppercase tracking-widest text-ivory/40">Detail Images Rack (Comma-separated paths)</label>
+                        <div className="flex gap-2">
                           <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => handleFileUpload(e, 'rack')}
-                            className="hidden"
+                            type="text"
+                            value={formImagesText}
+                            onChange={(e) => setFormImagesText(e.target.value)}
+                            placeholder="e.g., /assets/shirt_white.png, /assets/shirt_white_collar.png"
+                            className="flex-1 bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-3 py-3 text-ivory focus:outline-none placeholder-white/20 font-mono text-xs"
                           />
-                        </label>
+                          <label className="px-4 py-3 bg-[#222] hover:bg-gold hover:text-black rounded-xl text-[10px] uppercase tracking-widest font-semibold cursor-pointer transition-all duration-300 flex items-center justify-center whitespace-nowrap">
+                            Upload View
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => handleFileUpload(e, 'rack')}
+                              className="hidden"
+                            />
+                          </label>
+                        </div>
+                        <span className="text-[8px] text-ivory/30">Alternate angles shown on the details page.</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-5 border-t border-white/5 pt-6">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[9px] uppercase tracking-widest text-ivory/40">Accent Color Hex</label>
-                      <div className="flex gap-2">
-                        <input
-                          type="color"
-                          value={formAccent}
-                          onChange={(e) => setFormAccent(e.target.value)}
-                          className="w-10 h-10 border border-white/10 rounded-lg cursor-pointer bg-transparent"
-                        />
+                  {/* Section: 3D Interactive Studio Config */}
+                  <div className="space-y-4 pt-4 border-t border-white/5">
+                    <h3 className="text-xs uppercase tracking-widest text-gold font-bold border-b border-white/5 pb-2">5. 3D Studio Configurations</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[9px] uppercase tracking-widest text-ivory/40">Accent Color Hex</label>
+                        <div className="flex gap-2">
+                          <input
+                            type="color"
+                            value={formAccent}
+                            onChange={(e) => setFormAccent(e.target.value)}
+                            className="w-10 h-10 border border-white/10 rounded-lg cursor-pointer bg-transparent"
+                          />
+                          <input
+                            type="text"
+                            value={formAccent}
+                            onChange={(e) => setFormAccent(e.target.value)}
+                            className="flex-1 bg-[#1b1b1b] border border-white/5 rounded-xl px-2.5 text-xs text-ivory font-mono focus:outline-none"
+                          />
+                        </div>
+                        <span className="text-[8px] text-ivory/30">Interactive highlighting color.</span>
+                      </div>
+                      
+                      <div className="flex flex-col gap-1.5 md:col-span-3">
+                        <label className="text-[9px] uppercase tracking-widest text-ivory/40">Spotlight Studio Backdrop Gradient (Tailwind/CSS classes)</label>
                         <input
                           type="text"
-                          value={formAccent}
-                          onChange={(e) => setFormAccent(e.target.value)}
-                          className="flex-1 bg-[#1b1b1b] border border-white/5 rounded-xl px-2.5 text-xs text-ivory font-mono focus:outline-none"
+                          value={formGradient}
+                          onChange={(e) => setFormGradient(e.target.value)}
+                          placeholder="from-[#111] via-[#090909] to-[#040404]"
+                          className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20 font-mono text-xs"
                         />
+                        <span className="text-[8px] text-ivory/30">Backdrop colors behind the shirt's detail view page.</span>
                       </div>
                     </div>
-                    
-                    <div className="flex flex-col gap-1.5 md:col-span-3">
-                      <label className="text-[9px] uppercase tracking-widest text-ivory/40">Spotlight Gradient (Tailwind/CSS classes)</label>
-                      <input
-                        type="text"
-                        value={formGradient}
-                        onChange={(e) => setFormGradient(e.target.value)}
-                        placeholder="from-[#111] via-[#090909] to-[#040404]"
-                        className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20 font-mono text-xs"
-                      />
-                    </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 border-t border-white/5 pt-6">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[9px] uppercase tracking-widest text-ivory/40">3D Background Gradient (Tailwind/CSS classes)</label>
-                      <input
-                        type="text"
-                        value={formBgGradient}
-                        onChange={(e) => setFormBgGradient(e.target.value)}
-                        placeholder="from-[#111111] to-[#080808]"
-                        className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20 font-mono text-xs"
-                      />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[9px] uppercase tracking-widest text-ivory/40">3D Background Gradient (Tailwind/CSS classes)</label>
+                        <input
+                          type="text"
+                          value={formBgGradient}
+                          onChange={(e) => setFormBgGradient(e.target.value)}
+                          placeholder="from-[#111111] to-[#080808]"
+                          className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20 font-mono text-xs"
+                        />
+                        <span className="text-[8px] text-ivory/30">Color gradient behind the 3D viewer model canvas.</span>
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[9px] uppercase tracking-widest text-ivory/40">3D Interactive Glow Color (RGBA/CSS)</label>
+                        <input
+                          type="text"
+                          value={formAccentColor}
+                          onChange={(e) => setFormAccentColor(e.target.value)}
+                          placeholder="rgba(180,180,180,0.5)"
+                          className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20 font-mono text-xs"
+                        />
+                        <span className="text-[8px] text-ivory/30">Interactive color glow overlay for 3D model highlights.</span>
+                      </div>
                     </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[9px] uppercase tracking-widest text-ivory/40">3D Interactive Glow Color (RGBA/CSS)</label>
-                      <input
-                        type="text"
-                        value={formAccentColor}
-                        onChange={(e) => setFormAccentColor(e.target.value)}
-                        placeholder="rgba(180,180,180,0.5)"
-                        className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20 font-mono text-xs"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[9px] uppercase tracking-widest text-ivory/40">3D Studio Story Description</label>
-                      <textarea
-                        rows={2}
-                        value={formStory}
-                        onChange={(e) => setFormStory(e.target.value)}
-                        placeholder="A short overview for 3D studio story tab..."
-                        className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20 resize-none font-sans"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[9px] uppercase tracking-widest text-ivory/40">3D Studio Atmosphere Details</label>
-                      <textarea
-                        rows={2}
-                        value={formAtmosphere}
-                        onChange={(e) => setFormAtmosphere(e.target.value)}
-                        placeholder="e.g. Specular spotlights wash."
-                        className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20 resize-none font-sans"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[9px] uppercase tracking-widest text-ivory/40">3D Studio Fit Details</label>
-                      <textarea
-                        rows={2}
-                        value={formFitInfo}
-                        onChange={(e) => setFormFitInfo(e.target.value)}
-                        placeholder="Tailored fit description..."
-                        className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20 resize-none font-sans"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[9px] uppercase tracking-widest text-ivory/40">3D Studio Care Details</label>
-                      <textarea
-                        rows={2}
-                        value={formCareInfo}
-                        onChange={(e) => setFormCareInfo(e.target.value)}
-                        placeholder="Line dry, warm iron..."
-                        className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20 resize-none font-sans"
-                      />
-                    </div>
-                  </div>
 
-                  <div className="flex flex-col gap-1.5 border-t border-white/5 pt-6">
-                    <label className="text-[9px] uppercase tracking-widest text-ivory/40">Features bulletpoints (Comma-separated)</label>
-                    <input
-                      type="text"
-                      value={formFeaturesText}
-                      onChange={(e) => setFormFeaturesText(e.target.value)}
-                      placeholder="e.g. Giza Cotton, Pearl Buttons, Double Cuffs"
-                      className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20"
-                    />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[9px] uppercase tracking-widest text-ivory/40">3D Studio "Story" Tab Overview</label>
+                        <textarea
+                          rows={2}
+                          value={formStory}
+                          onChange={(e) => setFormStory(e.target.value)}
+                          placeholder="A brief editorial story about this shirt's inspiration..."
+                          className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20 resize-none font-sans"
+                        />
+                        <span className="text-[8px] text-ivory/30">Narrative shown under "Story" inside the 3D Viewer.</span>
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[9px] uppercase tracking-widest text-ivory/40">3D Studio "Atmosphere" Tab Details</label>
+                        <textarea
+                          rows={2}
+                          value={formAtmosphere}
+                          onChange={(e) => setFormAtmosphere(e.target.value)}
+                          placeholder="e.g., Deep emerald shading with high specular highlights."
+                          className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20 resize-none font-sans"
+                        />
+                        <span className="text-[8px] text-ivory/30">Information shown under "Atmosphere" inside the 3D Viewer.</span>
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[9px] uppercase tracking-widest text-ivory/40">3D Studio "Fit" Tab Details</label>
+                        <textarea
+                          rows={2}
+                          value={formFitInfo}
+                          onChange={(e) => setFormFitInfo(e.target.value)}
+                          placeholder="Describe the shape, collar style, and arm drape profile..."
+                          className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20 resize-none font-sans"
+                        />
+                        <span className="text-[8px] text-ivory/30">Sizing/Shape info shown under "Fit" inside the 3D Viewer.</span>
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[9px] uppercase tracking-widest text-ivory/40">3D Studio "Care" Tab Details</label>
+                        <textarea
+                          rows={2}
+                          value={formCareInfo}
+                          onChange={(e) => setFormCareInfo(e.target.value)}
+                          placeholder="e.g., Cold wash, mild detergent, low iron if needed..."
+                          className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none placeholder-white/20 resize-none font-sans"
+                        />
+                        <span className="text-[8px] text-ivory/30">Maintenance instructions shown under "Care" inside the 3D Viewer.</span>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="flex justify-end gap-3 pt-6 border-t border-white/5">
@@ -1685,6 +1862,152 @@ export default function AdminPage() {
                 </form>
               </motion.div>
             </motion.div>
+          )}
+
+          {viewingInvoice && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
+              <style dangerouslySetInnerHTML={{ __html: `
+                @media print {
+                  body * {
+                    visibility: hidden !important;
+                  }
+                  #printable-invoice-area, #printable-invoice-area * {
+                    visibility: visible !important;
+                  }
+                  #printable-invoice-area {
+                    position: absolute !important;
+                    left: 0 !important;
+                    top: 0 !important;
+                    width: 100% !important;
+                    background: white !important;
+                    color: black !important;
+                    padding: 40px !important;
+                  }
+                  .no-print {
+                    display: none !important;
+                  }
+                }
+              `}} />
+
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="bg-[#0b0b0b] border border-white/10 rounded-3xl p-6 md:p-8 w-full max-w-2xl text-left shadow-2xl relative space-y-6"
+              >
+                {/* Header Actions */}
+                <div className="flex justify-between items-center no-print border-b border-white/5 pb-4">
+                  <h3 className="font-serif text-lg text-white uppercase tracking-wider">Order Invoice PDF</h3>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => window.print()}
+                      className="px-4 py-2 bg-gold hover:bg-white text-black font-bold text-xs uppercase tracking-widest rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-md"
+                    >
+                      Print / Save PDF
+                    </button>
+                    <button
+                      onClick={() => setViewingInvoice(null)}
+                      className="px-4 py-2 border border-white/10 hover:border-white/30 rounded-xl text-xs uppercase tracking-widest font-semibold transition-all cursor-pointer"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+
+                {/* Invoice Area */}
+                <div id="printable-invoice-area" className="bg-[#0f0f0f] border border-white/5 rounded-2xl p-6 md:p-10 space-y-8 text-white font-sans">
+                  {/* Branding row */}
+                  <div className="flex justify-between items-start border-b border-white/10 pb-6">
+                    <div>
+                      <h1 className="font-serif text-3xl font-light uppercase tracking-widest text-gold leading-none">Ink &amp; Cotton Club</h1>
+                      <p className="text-[10px] text-ivory/50 uppercase tracking-widest mt-2 font-medium">Tailored Essentials Atelier</p>
+                    </div>
+                    <div className="text-right">
+                      <span className="inline-block px-3 py-1 bg-gold/10 border border-gold/20 text-gold text-[10px] uppercase tracking-widest font-bold rounded-full">
+                        Invoice
+                      </span>
+                      <p className="font-mono text-xs text-white/50 mt-2">No: {viewingInvoice.trackingNumber}</p>
+                    </div>
+                  </div>
+
+                  {/* Billing Details Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs border-b border-white/5 pb-6">
+                    <div className="space-y-1.5 text-left">
+                      <h4 className="text-[9px] uppercase tracking-widest text-gold font-bold">Client Information</h4>
+                      {viewingInvoice.user ? (
+                        <>
+                          <p className="font-semibold text-white text-sm">{viewingInvoice.user.name}</p>
+                          <p className="text-white/60">{viewingInvoice.user.email}</p>
+                          <p className="text-white/60">Tier Level: {viewingInvoice.user.tier}</p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="font-semibold text-white text-sm">{viewingInvoice.customerName || 'Guest'}</p>
+                          <p className="text-white/60">{viewingInvoice.contactEmail || 'No Email'}</p>
+                          <p className="text-white/60">Status: Guest Checkout</p>
+                        </>
+                      )}
+                      {viewingInvoice.contactPhone && (
+                        <p className="text-white/60 font-mono">Tel: {viewingInvoice.contactPhone}</p>
+                      )}
+                    </div>
+                    <div className="space-y-1.5 text-left md:text-right">
+                      <h4 className="text-[9px] uppercase tracking-widest text-gold font-bold">Shipping Details</h4>
+                      <p className="text-white/80 leading-relaxed max-w-xs md:ml-auto">{viewingInvoice.shippingAddress || 'Atelier Pickup'}</p>
+                      {viewingInvoice.pincode && (
+                        <p className="text-white/60 font-mono">Pincode: {viewingInvoice.pincode}</p>
+                      )}
+                      <p className="text-white/60 mt-1 uppercase tracking-wider text-[10px] font-semibold">Method: {viewingInvoice.paymentMethod}</p>
+                    </div>
+                  </div>
+
+                  {/* Items Ordered Table */}
+                  <div className="space-y-3">
+                    <h4 className="text-[9px] uppercase tracking-widest text-gold font-bold border-b border-white/5 pb-2 text-left">Line Items</h4>
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="border-b border-white/10 text-white/40 uppercase tracking-widest text-[8px] font-bold">
+                          <th className="pb-2 text-left">Description</th>
+                          <th className="pb-2 text-center" style={{ width: '15%' }}>Qty</th>
+                          <th className="pb-2 text-right" style={{ width: '25%' }}>Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5">
+                        {(() => {
+                          let parsedItems: any[] = [];
+                          try {
+                            parsedItems = JSON.parse(viewingInvoice.items || '[]');
+                          } catch (e) {
+                            console.error(e);
+                          }
+                          return parsedItems.map((it: any, idx: number) => (
+                            <tr key={idx}>
+                              <td className="py-3 text-left">
+                                <p className="font-medium text-white">{it.name}</p>
+                                <span className="text-[10px] text-white/50">Color: {it.colorName}</span>
+                              </td>
+                              <td className="py-3 text-center font-mono text-white/80">{it.quantity}</td>
+                              <td className="py-3 text-right font-serif text-gold">${(it.price * it.quantity).toFixed(2)}</td>
+                            </tr>
+                          ));
+                        })()}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Pricing summary */}
+                  <div className="flex justify-between items-end border-t border-white/10 pt-6">
+                    <div className="text-[10px] text-white/40 leading-relaxed font-sans max-w-xs text-left">
+                      <p>Thank you for choosing Ink &amp; Cotton Club. All bespoke pieces are carefully curated and finished at our local atelier.</p>
+                    </div>
+                    <div className="text-right space-y-1">
+                      <span className="text-[9px] uppercase tracking-widest text-white/40 font-bold block">Grand Total</span>
+                      <span className="font-serif text-2xl text-gold font-semibold">${viewingInvoice.totalPrice.toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
           )}
         </AnimatePresence>
 

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/utils/authOptions";
 import { prisma } from "@/utils/prisma";
+import { assignMembershipCard } from "@/utils/cardAssigner";
+import { sendOrderEmails } from "@/utils/mailer";
 
 export async function GET(request: Request) {
   try {
@@ -139,17 +141,100 @@ export async function POST(request: Request) {
         }
       });
 
-      // 2. Update user's tier to Gold if total spent is >= $300
-      const allOrders = await prisma.order.findMany({
-        where: { userId }
+      // 2. Update user's membership tier and assign card numbers dynamically based on purchase rules
+      const currentUser = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, tier: true, cardNumber: true }
       });
-      const totalSpent = allOrders.reduce((sum, o) => sum + o.totalPrice, 0);
-      
-      if (totalSpent >= 300) {
+
+      let targetTier = currentUser?.tier || "None";
+
+      // One-time purchase of more than 40000 -> Gold Card
+      if (parseFloat(totalPrice) > 40000) {
+        targetTier = "Gold";
+      } else if (targetTier !== "Gold") {
+        targetTier = "Silver";
+      }
+
+      let finalUser = currentUser;
+      if (targetTier !== "None") {
+        try {
+          const updated = await assignMembershipCard(userId, targetTier);
+          finalUser = {
+            id: updated.id,
+            tier: updated.tier,
+            cardNumber: updated.cardNumber || null
+          };
+        } catch (assignError) {
+          console.error("DYNAMIC_CARD_ASSIGNMENT_ERROR", assignError);
+          // Fallback: update tier directly if card pool is exhausted
+          const updated = await prisma.user.update({
+            where: { id: userId },
+            data: { tier: targetTier }
+          });
+          finalUser = {
+            id: updated.id,
+            tier: updated.tier,
+            cardNumber: updated.cardNumber || null
+          };
+        }
+      }
+
+      // 3. Calculate points earned from this purchase and reward buyer + referrer
+      const pointsMultiplier = targetTier === "Gold" ? 0.10 : targetTier === "Silver" ? 0.05 : 0.02;
+      const earnedPoints = Math.round(parseFloat(totalPrice) * pointsMultiplier);
+
+      if (earnedPoints > 0) {
+        // Fetch referredById
+        const userDetails = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { referredById: true }
+        });
+
+        let buyerPoints = earnedPoints;
+        let referrerShare = 0;
+
+        // If this user was referred by someone, deduct 20% points from buyer and send to referrer
+        if (userDetails?.referredById) {
+          referrerShare = Math.round(earnedPoints * 0.20);
+          buyerPoints = earnedPoints - referrerShare;
+        }
+
+        // Award points to the buyer
         await prisma.user.update({
           where: { id: userId },
-          data: { tier: "Gold" }
+          data: {
+            points: {
+              increment: buyerPoints
+            }
+          }
         });
+
+        // Award the shared points to the referrer
+        if (referrerShare > 0 && userDetails?.referredById) {
+          await prisma.user.update({
+            where: { id: userDetails.referredById },
+            data: {
+              points: {
+                increment: referrerShare
+              }
+            }
+          });
+        }
+      }
+
+      // Dispatch user invoice and admin notification emails
+      try {
+        await sendOrderEmails(order, finalUser);
+      } catch (mailError) {
+        console.error("ORDER_MAIL_DISPATCH_ERROR", mailError);
+      }
+    } else {
+      // Guest checkout email dispatch
+      try {
+        await sendOrderEmails(order, null);
+      } catch (mailError) {
+        console.error("GUEST_ORDER_MAIL_DISPATCH_ERROR", mailError);
       }
     }
 

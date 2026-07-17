@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/utils/prisma";
+import { assignMembershipCard } from "@/utils/cardAssigner";
 
 export async function GET() {
   try {
@@ -10,6 +11,7 @@ export async function GET() {
         name: true,
         email: true,
         tier: true,
+        cardNumber: true,
         createdAt: true,
         _count: {
           select: {
@@ -35,10 +37,7 @@ export async function PATCH(request: Request) {
       return new NextResponse("ID and Tier required", { status: 400 });
     }
 
-    const updatedUser = await prisma.user.update({
-      where: { id },
-      data: { tier }
-    });
+    const updatedUser = await assignMembershipCard(id, tier);
 
     return NextResponse.json(updatedUser);
   } catch (error) {

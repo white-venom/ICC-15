@@ -1,0 +1,114 @@
+[
+  {
+    "cardNumber": "8492 1001 9204 1000",
+    "tier": "Silver",
+    "pin": "753",
+    "validThru": "LIFETIME",
+    "status": "Available"
+  },
+  {
+    "cardNumber": "8492 1002 9204 1001",
+    "tier": "Silver",
+    "pin": "218",
+    "validThru": "LIFETIME",
+    "status": "Available"
+  },
+  {
+    "cardNumber": "8492 1003 9204 1002",
+    "tier": "Silver",
+    "pin": "419",
+    "validThru": "LIFETIME",
+    "status": "Available"
+  },
+  {
+    "cardNumber": "8492 1004 9204 1003",
+    "tier": "Silver",
+    "pin": "902",
+    "validThru": "LIFETIME",
+    "status": "Available"
+  },
+  {
+    "cardNumber": "8492 1005 9204 1004",
+    "tier": "Silver",
+    "pin": "673",
+    "validThru": "LIFETIME",
+    "status": "Available"
+  },
+  {
+    "cardNumber": "8492 1006 9204 1005",
+    "tier": "Silver",
+    "pin": "314",
+    "validThru": "LIFETIME",
+    "status": "Available"
+  },
+  {
+    "cardNumber": "8492 1007 9204 1006",
+    "tier": "Silver",
+    "pin": "824",
+    "validThru": "LIFETIME",
+    "status": "Available"
+  },
+  {
+    "cardNumber": "8492 1008 9204 1007",
+    "tier": "Silver",
+    "pin": "509",
+    "validThru": "LIFETIME",
+    "status": "Available"
+  },
+  {
+    "cardNumber": "8492 2001 9204 3000",
+    "tier": "Gold",
+    "pin": "492",
+    "validThru": "LIFETIME",
+    "status": "Available"
+  },
+  {
+    "cardNumber": "8492 2002 9204 3001",
+    "tier": "Gold",
+    "pin": "812",
+    "validThru": "LIFETIME",
+    "status": "Available"
+  },
+  {
+    "cardNumber": "8492 2003 9204 3002",
+    "tier": "Gold",
+    "pin": "627",
+    "validThru": "LIFETIME",
+    "status": "Available"
+  },
+  {
+    "cardNumber": "8492 2004 9204 3003",
+    "tier": "Gold",
+    "pin": "135",
+    "validThru": "LIFETIME",
+    "status": "Available"
+  },
+  {
+    "cardNumber": "8492 2005 9204 3004",
+    "tier": "Gold",
+    "pin": "748",
+    "validThru": "LIFETIME",
+    "status": "Available"
+  },
+  {
+    "cardNumber": "8492 2006 9204 3005",
+    "tier": "Gold",
+    "pin": "951",
+    "validThru": "LIFETIME",
+    "status": "Available"
+  },
+  {
+    "cardNumber": "8492 2007 9204 3006",
+    "tier": "Gold",
+    "pin": "358",
+    "validThru": "LIFETIME",
+    "status": "Available"
+  },
+  {
+    "cardNumber": "8492 2008 9204 3007",
+    "tier": "Gold",
+    "pin": "603",
+    "validThru": "LIFETIME",
+    "status": "Available"
+  }
+]

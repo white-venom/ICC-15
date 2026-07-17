@@ -14,6 +14,7 @@ export default function LoginPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [referralCode, setReferralCode] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +42,7 @@ export default function LoginPage() {
         const res = await fetch('/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, password }),
+          body: JSON.stringify({ name, email, password, referralCode }),
         });
 
         if (res.ok) {
@@ -122,6 +123,19 @@ export default function LoginPage() {
                 className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory focus:outline-none transition-colors"
               />
             </div>
+
+            {!isLogin && (
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[9px] uppercase tracking-widest text-ivory/40">Referral Code (Optional)</label>
+                <input
+                  type="text"
+                  value={referralCode}
+                  onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                  placeholder="e.g. ICC-XXXXX"
+                  className="w-full bg-[#1b1b1b] border border-white/5 focus:border-gold/50 rounded-xl px-4 py-3 text-ivory placeholder-ivory/20 focus:outline-none transition-colors uppercase"
+                />
+              </div>
+            )}
 
             <button
               type="submit"

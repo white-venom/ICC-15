@@ -5,6 +5,7 @@ import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { ShieldCheck, Sparkles, Trophy, Award } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
 import Image from 'next/image';
+import CARDS from '@/utils/cards.json';
 
 // ── LOCALIZATION MAP ──────────────────────────────────────────────────────────
 const TRANSLATIONS: Record<string, Record<string, string>> = {
@@ -64,6 +65,9 @@ export default function LoyaltyTiers() {
   const silverBenefits = [t.silverBenefit1, t.silverBenefit2, t.silverBenefit3, t.silverBenefit4];
   const goldBenefits = [t.goldBenefit1, t.goldBenefit2, t.goldBenefit3, t.goldBenefit4];
 
+  const silverCard = CARDS.find(c => c.tier === 'Silver');
+  const goldCard = CARDS.find(c => c.tier === 'Gold');
+
   return (
     <section id="loyalty" className="relative py-24 px-6 md:px-16 bg-[#050505] overflow-hidden z-10 font-sans border-b border-white/5" dir={isArabic ? 'rtl' : 'ltr'}>
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none overflow-hidden opacity-[0.02] w-full text-center">
@@ -87,12 +91,12 @@ export default function LoyaltyTiers() {
               <FlipCard
                 tier="silver"
                 subtitle={t.silverSubtitle}
-                cardNo="•••• •••• •••• 1000"
+                cardNo={silverCard?.cardNumber || "•••• •••• •••• 1000"}
                 glowColor="rgba(255, 255, 255, 0.15)"
                 memberStatus={t.silverMemberStatus}
                 memberLabel={t.memberLabel}
                 pinLabel={t.pinLabel}
-                samplePin="7"
+                samplePin={silverCard?.pin || "7"}
                 tapToFlip={t.tapToFlip}
                 tapToFlipBack={t.tapToFlipBack}
               />
@@ -121,12 +125,12 @@ export default function LoyaltyTiers() {
               <FlipCard
                 tier="gold"
                 subtitle={t.goldSubtitle}
-                cardNo="•••• •••• •••• 3000"
+                cardNo={goldCard?.cardNumber || "•••• •••• •••• 3000"}
                 glowColor="rgba(212, 175, 55, 0.25)"
                 memberStatus={t.goldMemberStatus}
                 memberLabel={t.memberLabel}
                 pinLabel={t.pinLabel}
-                samplePin="4"
+                samplePin={goldCard?.pin || "4"}
                 tapToFlip={t.tapToFlip}
                 tapToFlipBack={t.tapToFlipBack}
               />

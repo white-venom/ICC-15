@@ -2,6 +2,45 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/utils/authOptions";
 import { prisma } from "@/utils/prisma";
+import { generateUniqueReferralCode } from "@/utils/referral";
+
+const profileSelectFields = {
+  id: true,
+  name: true,
+  email: true,
+  tier: true,
+  cardNumber: true,
+  phone: true,
+  address: true,
+  apartment: true,
+  city: true,
+  state: true,
+  pincode: true,
+  country: true,
+  points: true,
+  referralCode: true,
+  referredBy: {
+    select: {
+      id: true,
+      name: true,
+      email: true
+    }
+  },
+  referrals: {
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      tier: true
+    }
+  },
+  orders: {
+    orderBy: { createdAt: "desc" as const }
+  },
+  savedItems: {
+    orderBy: { createdAt: "desc" as const }
+  }
+};
 
 export async function GET() {
   try {
@@ -16,31 +55,36 @@ export async function GET() {
       return new NextResponse("Invalid Session Email", { status: 400 });
     }
 
-    const userProfile = await prisma.user.findUnique({
+    let userProfile = await prisma.user.findUnique({
       where: { email },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        tier: true,
-        phone: true,
-        address: true,
-        apartment: true,
-        city: true,
-        state: true,
-        pincode: true,
-        country: true,
-        orders: {
-          orderBy: { createdAt: "desc" }
-        },
-        savedItems: {
-          orderBy: { createdAt: "desc" }
-        }
-      }
+      select: profileSelectFields
     });
 
     if (!userProfile) {
-      return new NextResponse("User not found", { status: 404 });
+      // Auto-create user inside the new MySQL database
+      const referralCode = await generateUniqueReferralCode();
+      await prisma.user.create({
+        data: {
+          email,
+          name: session.user.name || email.split('@')[0],
+          tier: "None",
+          referralCode
+        }
+      });
+
+      // Fetch user profile again to load empty relations
+      userProfile = await prisma.user.findUnique({
+        where: { email },
+        select: profileSelectFields
+      });
+    } else if (!userProfile.referralCode) {
+      // Backfill referral code for existing user
+      const referralCode = await generateUniqueReferralCode();
+      await prisma.user.update({
+        where: { id: userProfile.id },
+        data: { referralCode }
+      });
+      userProfile.referralCode = referralCode;
     }
 
     return NextResponse.json(userProfile);

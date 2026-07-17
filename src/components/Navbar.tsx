@@ -9,6 +9,7 @@ import { useAppContext } from '@/context/AppContext';
 import { TRANSLATIONS } from '@/utils/translations';
 import { useSession, signOut } from 'next-auth/react';
 import PRODUCTS from '@/utils/products.json';
+import CARDS from '@/utils/cards.json';
 
 interface NavbarProps {
   cartCount: number;
@@ -66,16 +67,7 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
     };
   }, []);
 
-  useEffect(() => {
-    if (session) {
-      fetchProfileData();
-    } else {
-      setProfileData(null);
-      setWishlistItems([]);
-    }
-  }, [session]);
-
-  const fetchProfileData = async () => {
+  async function fetchProfileData() {
     try {
       const res = await fetch('/api/user/profile');
       if (res.ok) {
@@ -98,7 +90,17 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
     } catch (e) {
       console.error("Error fetching profile details:", e);
     }
-  };
+  }
+
+  useEffect(() => {
+    if (session) {
+      fetchProfileData();
+    } else {
+      setProfileData(null);
+      setWishlistItems([]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session]);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -368,9 +370,17 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
                         <span className="text-[8px] tracking-[0.25em] font-sans text-white/80 font-bold">ICC CLUB MEMBER</span>
                         <span className="text-[8px] tracking-[0.25em] font-sans text-gold uppercase font-bold">{profileData.tier}</span>
                       </div>
-                      <div className="relative text-left">
-                        <span className="text-[8px] text-white/40 tracking-widest uppercase block mb-0.5">Member ID</span>
-                        <span className="font-mono text-sm tracking-wider text-white">ICC-{profileData.id.slice(-6).toUpperCase()}</span>
+                      <div className="relative text-left flex justify-between items-end">
+                        <div>
+                          <span className="text-[7px] text-white/30 tracking-widest uppercase block">Card Number</span>
+                          <span className="font-mono text-[11px] tracking-wider text-white">
+                            {profileData.cardNumber || CARDS.find(c => c.tier === profileData.tier)?.cardNumber || "•••• •••• •••• 1000"}
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-[7px] text-white/30 tracking-widest uppercase block">Member ID</span>
+                          <span className="font-mono text-[10px] tracking-wider text-white">ICC-{profileData.id.slice(-6).toUpperCase()}</span>
+                        </div>
                       </div>
                     </div>
                   ) : (
@@ -574,6 +584,46 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
                           {updating ? 'Updating...' : 'Save Changes'}
                         </button>
                       </form>
+
+                      {/* Referral Program Card */}
+                      <div className="mt-6 pt-6 border-t border-white/5 space-y-3">
+                        <h4 className="text-[10px] uppercase tracking-widest text-gold font-bold">Referral Program</h4>
+                        <div className="bg-[#121212] border border-gold/15 rounded-2xl p-4 space-y-3">
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <p className="text-[8px] text-white/40 uppercase tracking-widest">Your Referral Code</p>
+                              <p className="font-mono text-sm text-white font-bold tracking-wider mt-0.5">{profileData.referralCode || 'Generating...'}</p>
+                            </div>
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(profileData.referralCode || '');
+                                alert('Referral code copied to clipboard!');
+                              }}
+                              className="px-2.5 py-1 bg-gold/10 hover:bg-gold/20 border border-gold/20 text-gold text-[8px] uppercase tracking-widest font-semibold rounded-md transition-colors"
+                            >
+                              Copy Code
+                            </button>
+                          </div>
+                          
+                          <p className="text-[10px] text-ivory/60 leading-normal">
+                            Share this code with your friends. When they register, both of you will receive <strong>100 ICC points</strong>! Plus, when they shop, their points will be shared with you.
+                          </p>
+
+                          <div className="flex justify-between items-center text-[10px] pt-1.5 border-t border-white/5">
+                            <span className="text-white/40 uppercase tracking-widest">Referrals Made:</span>
+                            <span className="text-white font-mono font-bold">{profileData.referrals?.length || 0} / 5</span>
+                          </div>
+
+                          {profileData.referredBy && (
+                            <div className="flex justify-between items-center text-[10px] pt-1 border-t border-white/5">
+                              <span className="text-white/40 uppercase tracking-widest">Referred By:</span>
+                              <span className="text-gold font-bold">
+                                {profileData.referredBy.name || profileData.referredBy.email}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
 
                     {/* Right Column: Wishlist / Saved Items */}
@@ -788,9 +838,17 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
                             <span className="text-[8px] tracking-[0.25em] font-sans text-white/80 font-bold">ICC CLUB MEMBER</span>
                             <span className="text-[8px] tracking-[0.25em] font-sans text-gold uppercase font-bold">{profileData.tier}</span>
                           </div>
-                          <div className="relative text-left">
-                            <span className="text-[8px] text-white/40 tracking-widest uppercase block mb-0.5">Member ID</span>
-                            <span className="font-mono text-sm tracking-wider text-white">ICC-{profileData.id.slice(-6).toUpperCase()}</span>
+                          <div className="relative text-left flex justify-between items-end">
+                            <div>
+                              <span className="text-[7px] text-white/30 tracking-widest uppercase block">Card Number</span>
+                              <span className="font-mono text-[11px] tracking-wider text-white">
+                                {profileData.cardNumber || CARDS.find(c => c.tier === profileData.tier)?.cardNumber || "•••• •••• •••• 1000"}
+                              </span>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-[7px] text-white/30 tracking-widest uppercase block">Member ID</span>
+                              <span className="font-mono text-[10px] tracking-wider text-white">ICC-{profileData.id.slice(-6).toUpperCase()}</span>
+                            </div>
                           </div>
                         </div>
                       ) : (
@@ -906,11 +964,7 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
                         <p className="text-[8px] text-gold uppercase tracking-[0.2em] font-semibold">Available Balance</p>
                         <div className="flex items-baseline gap-1 mt-1">
                           <span className="font-mono text-3xl font-bold text-white">
-                            {(() => {
-                              const totalSpent = profileData.orders?.reduce((acc: number, order: any) => acc + order.totalPrice, 0) || 0;
-                              const pointsMultiplier = profileData.tier === 'Gold' ? 0.10 : profileData.tier === 'Silver' ? 0.05 : 0;
-                              return Math.round(totalSpent * pointsMultiplier).toLocaleString();
-                            })()}
+                            {(profileData.points ?? 0).toLocaleString()}
                           </span>
                           <span className="text-[10px] text-gold uppercase font-bold tracking-widest">credits</span>
                         </div>
@@ -934,17 +988,34 @@ export default function Navbar({ cartCount, onCartClick }: NavbarProps) {
                           <div className="flex justify-between text-[10px] border-b border-white/5 pb-1">
                             <span>Multiplier Rate:</span>
                             <span className="text-gold font-mono">
-                              {profileData.tier === 'Gold' ? '10% (Gold)' : profileData.tier === 'Silver' ? '5% (Silver)' : '0% (Pending Activation)'}
+                              {profileData.tier === 'Gold' ? '10% (Gold)' : profileData.tier === 'Silver' ? '5% (Silver)' : '2% (Default)'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-[10px] border-b border-white/5 pb-1">
+                            <span>Base Purchase Points:</span>
+                            <span className="text-white font-mono">
+                              {(() => {
+                                const totalSpent = profileData.orders?.reduce((acc: number, order: any) => acc + order.totalPrice, 0) || 0;
+                                const pointsMultiplier = profileData.tier === 'Gold' ? 0.10 : profileData.tier === 'Silver' ? 0.05 : 0.02;
+                                return Math.round(totalSpent * pointsMultiplier).toLocaleString();
+                              })()} Credits
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-[10px] border-b border-white/5 pb-1">
+                            <span>Referral & Bonus Points:</span>
+                            <span className="text-white font-mono">
+                              {(() => {
+                                const totalSpent = profileData.orders?.reduce((acc: number, order: any) => acc + order.totalPrice, 0) || 0;
+                                const pointsMultiplier = profileData.tier === 'Gold' ? 0.10 : profileData.tier === 'Silver' ? 0.05 : 0.02;
+                                const basePoints = Math.round(totalSpent * pointsMultiplier);
+                                return Math.max(0, (profileData.points ?? 0) - basePoints).toLocaleString();
+                              })()} Credits
                             </span>
                           </div>
                           <div className="flex justify-between text-[10px] font-bold text-white pt-1">
                             <span>Calculated Reward Balance:</span>
                             <span className="text-gold font-mono font-bold">
-                              {(() => {
-                                const totalSpent = profileData.orders?.reduce((acc: number, order: any) => acc + order.totalPrice, 0) || 0;
-                                const pointsMultiplier = profileData.tier === 'Gold' ? 0.10 : profileData.tier === 'Silver' ? 0.05 : 0;
-                                return Math.round(totalSpent * pointsMultiplier).toLocaleString();
-                              })()} Credits
+                              {(profileData.points ?? 0).toLocaleString()} Credits
                             </span>
                           </div>
                         </div>
