@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useSession, signIn } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Edit2, Trash2, Save, X, Settings, AlertTriangle, ArrowLeft, Shirt, ShoppingBag, Users, Calendar, BookOpen, Clock, User, Tag, ShieldCheck, CreditCard, FileText } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -133,6 +133,11 @@ export default function AdminPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [uploading, setUploading] = useState(false);
+
+  // Direct passcode auth states
+  const [passcode, setPasscode] = useState('');
+  const [authError, setAuthError] = useState('');
+  const [authenticating, setAuthenticating] = useState(false);
 
   // Form states (Shirts)
   const [formId, setFormId] = useState('');
@@ -748,6 +753,29 @@ export default function AdminPage() {
     }
   };
 
+  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "xcplllp@gmail.com";
+
+  const handleUnlock = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError('');
+    setAuthenticating(true);
+    try {
+      const res = await signIn('credentials', {
+        email: adminEmail,
+        password: passcode,
+        redirect: false
+      });
+      if (res?.error) {
+        setAuthError('Invalid administrative passcode.');
+      }
+    } catch (err) {
+      console.error(err);
+      setAuthError('An error occurred during authentication.');
+    } finally {
+      setAuthenticating(false);
+    }
+  };
+
   if (status === 'loading') {
     return (
       <div className="min-h-screen bg-[#050505] text-ivory flex justify-center items-center font-sans">
@@ -756,18 +784,51 @@ export default function AdminPage() {
     );
   }
 
-  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "xcplllp@gmail.com";
   if (status === 'unauthenticated' || (session?.user && session.user.email !== adminEmail)) {
     return (
-      <div className="min-h-screen bg-[#050505] text-ivory flex flex-col justify-center items-center gap-4 font-sans text-center px-6">
-        <h1 className="text-2xl font-serif text-white uppercase tracking-wider">Access Denied</h1>
-        <p className="text-xs text-ivory/60 max-w-md uppercase tracking-widest leading-relaxed">You do not have the required administrative permissions to access the Atelier Command Center.</p>
-        <button
-          onClick={() => router.push('/')}
-          className="px-6 py-3 bg-gold text-[#050505] hover:bg-white hover:text-black transition-all duration-300 font-bold text-xs uppercase tracking-widest rounded-full mt-4 cursor-pointer"
-        >
-          Return to Store
-        </button>
+      <div className="min-h-screen bg-[#050505] text-ivory flex flex-col justify-center items-center font-sans px-6">
+        <div className="max-w-md w-full space-y-8 bg-[#111] border border-white/5 p-10 rounded-[2.5rem] shadow-2xl text-center">
+          <div className="space-y-2">
+            <Settings className="text-gold animate-spin-slow mx-auto" size={36} />
+            <h1 className="font-serif text-2xl uppercase tracking-widest text-white">Atelier Command Center</h1>
+            <p className="text-[10px] text-gold uppercase tracking-[0.25em]">Database Administration Access</p>
+          </div>
+
+          <form onSubmit={handleUnlock} className="space-y-6 pt-4">
+            <div className="space-y-1 text-left">
+              <label className="text-[9px] uppercase tracking-widest text-ivory/50 block pl-1">Passcode</label>
+              <input
+                type="password"
+                value={passcode}
+                onChange={(e) => setPasscode(e.target.value)}
+                placeholder="••••••••••••"
+                className="w-full bg-[#1b1b1b] border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gold/50 text-center font-mono placeholder:text-white/10 tracking-widest"
+                required
+              />
+            </div>
+
+            {authError && (
+              <p className="text-[10px] text-red-400 uppercase tracking-wider font-semibold animate-pulse">{authError}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={authenticating}
+              className="w-full py-3.5 bg-gold text-[#050505] hover:bg-white hover:text-black disabled:bg-gold/50 transition-all duration-300 font-bold text-xs uppercase tracking-widest rounded-full cursor-pointer flex items-center justify-center gap-2"
+            >
+              {authenticating ? 'Unlocking...' : 'Unlock Atelier'}
+            </button>
+          </form>
+
+          <div className="pt-4 border-t border-white/5">
+            <button
+              onClick={() => router.push('/')}
+              className="flex items-center gap-1.5 mx-auto text-[9px] uppercase tracking-[0.3em] text-ivory/30 hover:text-gold transition-colors duration-300 cursor-pointer"
+            >
+              <ArrowLeft size={10} /> Cancel & Return
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
