@@ -185,8 +185,11 @@ export default function AdminPage() {
   const isFirstLoad = React.useRef(true);
 
   useEffect(() => {
-    fetchData();
-  }, [activeTab]);
+    const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "xcplllp@gmail.com";
+    if (status === 'authenticated' && session?.user?.email === adminEmail) {
+      fetchData();
+    }
+  }, [activeTab, status, session]);
 
   async function fetchData() {
     setLoading(true);
@@ -202,6 +205,12 @@ export default function AdminPage() {
           fetch('/api/admin/cards'),
           fetch('/api/inventory')
         ]);
+
+        if (!prodRes.ok || !ordRes.ok || !memRes.ok || !jrnRes.ok || !cardRes.ok || !invRes.ok) {
+          setError('Unauthorized or failed to fetch administrative data.');
+          setLoading(false);
+          return;
+        }
 
         const [prodData, ordData, memData, jrnData, cardData, invData] = await Promise.all([
           prodRes.json(),
@@ -237,47 +246,61 @@ export default function AdminPage() {
         // Subsequent switch: only fetch active tab's data
         if (activeTab === 'shirts') {
           const res = await fetch('/api/products');
-          const data = await res.json();
-          setProducts(data);
+          if (res.ok) {
+            const data = await res.json();
+            setProducts(data);
+          }
         } else if (activeTab === 'orders') {
           const res = await fetch('/api/admin/orders');
-          const data = await res.json();
-          setOrders(data);
+          if (res.ok) {
+            const data = await res.json();
+            setOrders(data);
+          }
         } else if (activeTab === 'members') {
           const res = await fetch('/api/admin/users');
-          const data = await res.json();
-          setMembers(data);
+          if (res.ok) {
+            const data = await res.json();
+            setMembers(data);
+          }
         } else if (activeTab === 'journals') {
           const res = await fetch('/api/journals');
-          const data = await res.json();
-          setJournals(data);
+          if (res.ok) {
+            const data = await res.json();
+            setJournals(data);
+          }
         } else if (activeTab === 'inventory') {
           // Fetch products first so we know what should exist
           const prodRes = await fetch('/api/products');
-          const prodData = await prodRes.json();
-          setProducts(prodData);
+          if (prodRes.ok) {
+            const prodData = await prodRes.json();
+            setProducts(prodData);
 
-          // Fetch inventory entries
-          const invRes = await fetch('/api/inventory');
-          const invData = await invRes.json();
-          setInventoryList(invData);
+            // Fetch inventory entries
+            const invRes = await fetch('/api/inventory');
+            if (invRes.ok) {
+              const invData = await invRes.json();
+              setInventoryList(invData);
 
-          // Map values into tempStocks for editing
-          const stocksMap: Record<string, number> = {};
-          prodData.forEach((p: ProductDetail) => {
-            const sizes = p.sizes && p.sizes.length > 0 ? p.sizes : ['38', '39', '40', '41', '42', '43', '44'];
-            sizes.forEach((s) => {
-              const key = `${p.id}-${s}-${p.colorName}`;
-              const existing = invData.find((item: any) => item.productId === p.id && item.size === s && item.colorName === p.colorName);
-              stocksMap[key] = existing ? existing.stock : 3; // default stock level is 3
-            });
-          });
-          setTempStocks(stocksMap);
+              // Map values into tempStocks for editing
+              const stocksMap: Record<string, number> = {};
+              prodData.forEach((p: ProductDetail) => {
+                const sizes = p.sizes && p.sizes.length > 0 ? p.sizes : ['38', '39', '40', '41', '42', '43', '44'];
+                sizes.forEach((s) => {
+                  const key = `${p.id}-${s}-${p.colorName}`;
+                  const existing = invData.find((item: any) => item.productId === p.id && item.size === s && item.colorName === p.colorName);
+                  stocksMap[key] = existing ? existing.stock : 3; // default stock level is 3
+                });
+              });
+              setTempStocks(stocksMap);
+            }
+          }
         } else if (activeTab === 'cards') {
           const res = await fetch('/api/admin/cards');
-          const data = await res.json();
-          setCardsList(data.cards);
-          setCardSummary(data.summary);
+          if (res.ok) {
+            const data = await res.json();
+            setCardsList(data.cards);
+            setCardSummary(data.summary);
+          }
         }
       }
     } catch (err) {
