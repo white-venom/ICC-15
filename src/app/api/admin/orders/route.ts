@@ -40,6 +40,13 @@ export async function PATCH(request: Request) {
       return new NextResponse("Order not found", { status: 404 });
     }
 
+    // Prevent modification of completed (Delivered) or cancelled orders
+    if (currentOrder.status === "Delivered" || currentOrder.status === "Out of Stock (Cancelled)") {
+      if (status && status !== currentOrder.status) {
+        return new NextResponse("Cannot change the status of a completed or cancelled order.", { status: 400 });
+      }
+    }
+
     // Check if status is transitioning to Shipped/Delivered (indicating payment confirmed/fulfillment)
     // and the order is currently in "Processing" status
     const isConfirmingPayment = (status === "Shipped" || status === "Delivered") && currentOrder.status === "Processing";

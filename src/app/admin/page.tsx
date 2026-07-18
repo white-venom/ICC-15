@@ -180,6 +180,8 @@ export default function AdminPage() {
   // Form states (Inventory adjustments)
   const [tempStocks, setTempStocks] = useState<Record<string, number>>({});
 
+  const isFirstLoad = React.useRef(true);
+
   useEffect(() => {
     fetchData();
   }, [activeTab]);
@@ -188,31 +190,32 @@ export default function AdminPage() {
     setLoading(true);
     setError('');
     try {
-      if (activeTab === 'shirts') {
-        const res = await fetch('/api/products');
-        const data = await res.json();
-        setProducts(data);
-      } else if (activeTab === 'orders') {
-        const res = await fetch('/api/admin/orders');
-        const data = await res.json();
-        setOrders(data);
-      } else if (activeTab === 'members') {
-        const res = await fetch('/api/admin/users');
-        const data = await res.json();
-        setMembers(data);
-      } else if (activeTab === 'journals') {
-        const res = await fetch('/api/journals');
-        const data = await res.json();
-        setJournals(data);
-      } else if (activeTab === 'inventory') {
-        // Fetch products first so we know what should exist
-        const prodRes = await fetch('/api/products');
-        const prodData = await prodRes.json();
-        setProducts(prodData);
+      if (isFirstLoad.current) {
+        // Fetch all databases in parallel on first load to populate all tab counts immediately
+        const [prodRes, ordRes, memRes, jrnRes, cardRes, invRes] = await Promise.all([
+          fetch('/api/products'),
+          fetch('/api/admin/orders'),
+          fetch('/api/admin/users'),
+          fetch('/api/journals'),
+          fetch('/api/admin/cards'),
+          fetch('/api/inventory')
+        ]);
 
-        // Fetch inventory entries
-        const invRes = await fetch('/api/inventory');
-        const invData = await invRes.json();
+        const [prodData, ordData, memData, jrnData, cardData, invData] = await Promise.all([
+          prodRes.json(),
+          ordRes.json(),
+          memRes.json(),
+          jrnRes.json(),
+          cardRes.json(),
+          invRes.json()
+        ]);
+
+        setProducts(prodData);
+        setOrders(ordData);
+        setMembers(memData);
+        setJournals(jrnData);
+        setCardsList(cardData.cards);
+        setCardSummary(cardData.summary);
         setInventoryList(invData);
 
         // Map values into tempStocks for editing
@@ -226,11 +229,54 @@ export default function AdminPage() {
           });
         });
         setTempStocks(stocksMap);
-      } else if (activeTab === 'cards') {
-        const res = await fetch('/api/admin/cards');
-        const data = await res.json();
-        setCardsList(data.cards);
-        setCardSummary(data.summary);
+
+        isFirstLoad.current = false;
+      } else {
+        // Subsequent switch: only fetch active tab's data
+        if (activeTab === 'shirts') {
+          const res = await fetch('/api/products');
+          const data = await res.json();
+          setProducts(data);
+        } else if (activeTab === 'orders') {
+          const res = await fetch('/api/admin/orders');
+          const data = await res.json();
+          setOrders(data);
+        } else if (activeTab === 'members') {
+          const res = await fetch('/api/admin/users');
+          const data = await res.json();
+          setMembers(data);
+        } else if (activeTab === 'journals') {
+          const res = await fetch('/api/journals');
+          const data = await res.json();
+          setJournals(data);
+        } else if (activeTab === 'inventory') {
+          // Fetch products first so we know what should exist
+          const prodRes = await fetch('/api/products');
+          const prodData = await prodRes.json();
+          setProducts(prodData);
+
+          // Fetch inventory entries
+          const invRes = await fetch('/api/inventory');
+          const invData = await invRes.json();
+          setInventoryList(invData);
+
+          // Map values into tempStocks for editing
+          const stocksMap: Record<string, number> = {};
+          prodData.forEach((p: ProductDetail) => {
+            const sizes = p.sizes && p.sizes.length > 0 ? p.sizes : ['38', '39', '40', '41', '42', '43', '44'];
+            sizes.forEach((s) => {
+              const key = `${p.id}-${s}-${p.colorName}`;
+              const existing = invData.find((item: any) => item.productId === p.id && item.size === s && item.colorName === p.colorName);
+              stocksMap[key] = existing ? existing.stock : 3; // default stock level is 3
+            });
+          });
+          setTempStocks(stocksMap);
+        } else if (activeTab === 'cards') {
+          const res = await fetch('/api/admin/cards');
+          const data = await res.json();
+          setCardsList(data.cards);
+          setCardSummary(data.summary);
+        }
       }
     } catch (err) {
       console.error(err);
@@ -238,7 +284,7 @@ export default function AdminPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   useEffect(() => {
     if (editingProduct || isAdding || editingJournal || isAddingJournal) {
@@ -957,7 +1003,8 @@ export default function AdminPage() {
                                 <select
                                   value={o.status}
                                   onChange={(e) => handleUpdateOrderStatus(o.id, e.target.value)}
-                                  className={`border border-white/10 text-white rounded-lg p-2 text-xs focus:outline-none w-full ${
+                                  disabled={o.status === 'Delivered' || o.status === 'Out of Stock (Cancelled)'}
+                                  className={`border border-white/10 text-white rounded-lg p-2 text-xs focus:outline-none w-full disabled:opacity-50 disabled:cursor-not-allowed ${
                                     o.status === 'Out of Stock (Cancelled)' ? 'bg-red-950/20 text-red-400 border-red-500/20' : 'bg-[#1b1b1b]'
                                   }`}
                                 >
