@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Edit2, Trash2, Save, X, Settings, AlertTriangle, ArrowLeft, Shirt, ShoppingBag, Users, Calendar, BookOpen, Clock, User, Tag, ShieldCheck, CreditCard, FileText } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -108,6 +109,7 @@ interface InventoryItem {
 
 export default function AdminPage() {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [activeTab, setActiveTab] = useState<'shirts' | 'orders' | 'members' | 'journals' | 'inventory' | 'cards'>('shirts');
   
   // Database states
@@ -722,6 +724,30 @@ export default function AdminPage() {
       setError('Could not update inventory level.');
     }
   };
+
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen bg-[#050505] text-ivory flex justify-center items-center font-sans">
+        <div className="w-8 h-8 border-2 border-gold/10 border-t-gold rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "xcplllp@gmail.com";
+  if (status === 'unauthenticated' || (session?.user && session.user.email !== adminEmail)) {
+    return (
+      <div className="min-h-screen bg-[#050505] text-ivory flex flex-col justify-center items-center gap-4 font-sans text-center px-6">
+        <h1 className="text-2xl font-serif text-white uppercase tracking-wider">Access Denied</h1>
+        <p className="text-xs text-ivory/60 max-w-md uppercase tracking-widest leading-relaxed">You do not have the required administrative permissions to access the Atelier Command Center.</p>
+        <button
+          onClick={() => router.push('/')}
+          className="px-6 py-3 bg-gold text-[#050505] hover:bg-white hover:text-black transition-all duration-300 font-bold text-xs uppercase tracking-widest rounded-full mt-4 cursor-pointer"
+        >
+          Return to Store
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#050505] text-ivory pt-24 pb-16 px-6 md:px-16 font-sans">

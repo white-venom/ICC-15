@@ -1,11 +1,34 @@
 import { NextResponse } from 'next/server';
+import { prisma } from '@/utils/prisma';
 
 export async function POST(request: Request) {
   try {
-    const { amount, currency } = await request.json();
+    const { amount, currency, items } = await request.json();
 
     if (!amount) {
       return new NextResponse("Amount is required", { status: 400 });
+    }
+
+    // Check stock if items are passed in the request body
+    if (items && Array.isArray(items)) {
+      for (const item of items) {
+        const [productId, size] = item.id.split('-');
+        const colorName = item.colorName;
+
+        let inv = await prisma.inventory.findUnique({
+          where: { productId_size_colorName: { productId, size, colorName } }
+        });
+
+        if (!inv) {
+          inv = await prisma.inventory.create({
+            data: { productId, size, colorName, stock: 3 }
+          });
+        }
+
+        if (inv.stock < item.quantity) {
+          return new NextResponse(`Out of stock: "${item.name}" (Size ${size}) is sold out!`, { status: 400 });
+        }
+      }
     }
 
     const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;

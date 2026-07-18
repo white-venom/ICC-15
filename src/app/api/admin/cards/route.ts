@@ -1,9 +1,16 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/utils/authOptions";
 import { prisma } from "@/utils/prisma";
 import CARDS from "@/utils/cards.json";
 
 export async function GET() {
   try {
+    const session = await getServerSession(authOptions);
+    const adminEmail = process.env.ADMIN_EMAIL || "admin@inkandcottonclub.com";
+    if (!session || !session.user || session.user.email !== adminEmail) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
     // Get all users who have a card number
     const assignedUsers = await prisma.user.findMany({
       where: { cardNumber: { not: null } },

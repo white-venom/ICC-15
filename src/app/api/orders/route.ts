@@ -5,6 +5,22 @@ import { prisma } from "@/utils/prisma";
 import { assignMembershipCard } from "@/utils/cardAssigner";
 import { sendOrderEmails } from "@/utils/mailer";
 
+// Memory lock for active order placements
+const activeLocks = new Set<string>();
+
+// Memory cache for completed order idempotency keys
+const completedIdempotencyKeys = new Map<string, { order: any; timestamp: number }>();
+
+// Clean up keys older than 15 minutes
+function cleanupIdempotencyKeys() {
+  const now = Date.now();
+  for (const [key, value] of completedIdempotencyKeys.entries()) {
+    if (now - value.timestamp > 15 * 60 * 1000) {
+      completedIdempotencyKeys.delete(key);
+    }
+  }
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -47,12 +63,14 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  let lockKey = "";
   try {
     const session = await getServerSession(authOptions);
     const userId = session?.user ? (session.user as any).id : null;
 
     const body = await request.json();
     const {
+      idempotencyKey,
       items,
       totalPrice,
       shippingAddress,
@@ -72,36 +90,120 @@ export async function POST(request: Request) {
       return new NextResponse("Missing order details", { status: 400 });
     }
 
-    const parsedItems = typeof items === "string" ? JSON.parse(items) : items;
+    // 1. Idempotency Check using client-provided idempotencyKey
+    if (idempotencyKey) {
+      lockKey = idempotencyKey;
+      cleanupIdempotencyKeys();
 
-    // 1. Verify stock is still available in the separate inventory database
-    for (const item of parsedItems) {
-      const [productId, size] = item.id.split('-');
-      const colorName = item.colorName;
-
-      let inv = await prisma.inventory.findUnique({
-        where: {
-          productId_size_colorName: { productId, size, colorName }
-        }
-      });
-
-      if (!inv) {
-        inv = await prisma.inventory.create({
-          data: {
-            productId,
-            size,
-            colorName,
-            stock: 3 // Default stock level
-          }
-        });
+      // Check if already completed
+      const cached = completedIdempotencyKeys.get(idempotencyKey);
+      if (cached) {
+        return NextResponse.json(cached.order);
       }
 
-      if (inv.stock < item.quantity) {
-        return new NextResponse(`Out of stock: "${item.name}" (Size ${size}) is sold out!`, { status: 400 });
+      // Check concurrent lock
+      if (activeLocks.has(idempotencyKey)) {
+        return new NextResponse("Order is already being processed. Please wait.", { status: 409 });
+      }
+      activeLocks.add(idempotencyKey);
+    }
+
+    // 2. Database Idempotency Check using Razorpay payment reference if present
+    let paymentRef = "";
+    if (paymentMethod) {
+      const match = paymentMethod.match(/(?:Ref:\s*)(pay_[A-Za-z0-9_]+|order_[A-Za-z0-9_]+|pay_sim_[A-Za-z0-9_]+)/);
+      if (match) {
+        paymentRef = match[1];
       }
     }
 
-    // 2. Generate tracking number
+    if (paymentRef) {
+      const existingOrder = await prisma.order.findFirst({
+        where: {
+          paymentMethod: {
+            contains: paymentRef
+          }
+        }
+      });
+      if (existingOrder) {
+        if (idempotencyKey) {
+          completedIdempotencyKeys.set(idempotencyKey, {
+            order: existingOrder,
+            timestamp: Date.now()
+          });
+        }
+        return NextResponse.json(existingOrder);
+      }
+    }
+
+    const parsedItems = typeof items === "string" ? JSON.parse(items) : items;
+
+    // 3. Verify stock is still available and deduct it atomically
+    const decrementedItems: { productId: string; size: string; colorName: string; quantity: number }[] = [];
+    try {
+      for (const item of parsedItems) {
+        const [productId, size] = item.id.split('-');
+        const colorName = item.colorName;
+
+        let inv = await prisma.inventory.findUnique({
+          where: {
+            productId_size_colorName: { productId, size, colorName }
+          }
+        });
+
+        if (!inv) {
+          inv = await prisma.inventory.create({
+            data: {
+              productId,
+              size,
+              colorName,
+              stock: 3 // Default stock level
+            }
+          });
+        }
+
+        if (inv.stock < item.quantity) {
+          // Rollback any decrements made in this request so far
+          for (const dec of decrementedItems) {
+            await prisma.inventory.update({
+              where: { productId_size_colorName: { productId: dec.productId, size: dec.size, colorName: dec.colorName } },
+              data: { stock: { increment: dec.quantity } }
+            });
+          }
+          return new NextResponse(`Out of stock: "${item.name}" (Size ${size}) is sold out!`, { status: 400 });
+        }
+
+        // Atomically decrement
+        const updatedInv = await prisma.inventory.update({
+          where: { productId_size_colorName: { productId, size, colorName } },
+          data: { stock: { decrement: item.quantity } }
+        });
+
+        decrementedItems.push({ productId, size, colorName, quantity: item.quantity });
+
+        // If stock drops below zero due to concurrency race, roll back and fail
+        if (updatedInv.stock < 0) {
+          for (const dec of decrementedItems) {
+            await prisma.inventory.update({
+              where: { productId_size_colorName: { productId: dec.productId, size: dec.size, colorName: dec.colorName } },
+              data: { stock: { increment: dec.quantity } }
+            });
+          }
+          return new NextResponse(`Out of stock: "${item.name}" (Size ${size}) has just sold out!`, { status: 400 });
+        }
+      }
+    } catch (stockErr) {
+      // Rollback database updates on error
+      for (const dec of decrementedItems) {
+        await prisma.inventory.update({
+          where: { productId_size_colorName: { productId: dec.productId, size: dec.size, colorName: dec.colorName } },
+          data: { stock: { increment: dec.quantity } }
+        });
+      }
+      throw stockErr;
+    }
+
+    // 4. Generate tracking number
     const trackingNumber = "ICC-" + Math.floor(100000 + Math.random() * 900000);
 
     const orderData: any = {
@@ -124,6 +226,49 @@ export async function POST(request: Request) {
     const order = await prisma.order.create({
       data: orderData
     });
+
+    // Save success in idempotency cache
+    if (idempotencyKey) {
+      completedIdempotencyKeys.set(idempotencyKey, {
+        order,
+        timestamp: Date.now()
+      });
+    }
+
+    // 5. Auto-cancel conflicting pending orders if stock drops to 0
+    try {
+      for (const dec of decrementedItems) {
+        const inv = await prisma.inventory.findUnique({
+          where: { productId_size_colorName: { productId: dec.productId, size: dec.size, colorName: dec.colorName } }
+        });
+
+        if (inv && inv.stock <= 0) {
+          const processingOrders = await prisma.order.findMany({
+            where: {
+              status: "Processing",
+              id: { not: order.id } // exclude current order
+            }
+          });
+
+          for (const otherOrder of processingOrders) {
+            const otherItems = JSON.parse(otherOrder.items || "[]");
+            const containsSoldOutItem = otherItems.some((oi: any) => {
+              const [oiProdId, oiSize] = oi.id.split('-');
+              return oiProdId === dec.productId && oiSize === dec.size && oi.colorName === dec.colorName;
+            });
+
+            if (containsSoldOutItem) {
+              await prisma.order.update({
+                where: { id: otherOrder.id },
+                data: { status: "Out of Stock (Cancelled)" }
+              });
+            }
+          }
+        }
+      }
+    } catch (cancelErr) {
+      console.error("Failed to auto-cancel conflicting orders:", cancelErr);
+    }
 
     if (userId) {
       // 1. Save/sync address to user's profile database entry
@@ -242,5 +387,9 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("CREATE_ORDER_ERROR", error);
     return new NextResponse("Internal Error", { status: 500 });
+  } finally {
+    if (lockKey) {
+      activeLocks.delete(lockKey);
+    }
   }
 }

@@ -43,6 +43,7 @@ export default function CheckoutPage() {
   const [placingOrder, setPlacingOrder] = useState(false);
   const [checkoutStepMessage, setCheckoutStepMessage] = useState('Securing order details...');
   const [orderResult, setOrderResult] = useState<any>(null);
+  const [idempotencyKey] = useState(() => 'idem_' + Math.random().toString(36).substring(2, 15) + Date.now().toString(36));
 
   // Profile details
   const [profile, setProfile] = useState<any>(null);
@@ -324,6 +325,7 @@ export default function CheckoutPage() {
     const fullAddress = `${formData.address}${formData.apartment ? ', ' + formData.apartment : ''}, ${formData.city}, ${formData.state}, ${formData.country}`;
     
     const orderPayload = {
+      idempotencyKey,
       items: cartItems.map(item => ({
         id: item.id,
         name: item.name,
@@ -429,15 +431,26 @@ export default function CheckoutPage() {
         const orderRes = await fetch('/api/payment/razorpay-order', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ amount: totalInCurrency, currency })
+          body: JSON.stringify({ 
+            amount: totalInCurrency, 
+            currency,
+            items: cartItems.map(item => ({
+              id: item.id,
+              name: item.name,
+              quantity: item.quantity,
+              price: item.price,
+              colorName: item.colorName
+            }))
+          })
         });
         if (!orderRes.ok) {
-          throw new Error(await orderRes.text());
+          const errorMsg = await orderRes.text();
+          throw new Error(errorMsg);
         }
         rzpOrderData = await orderRes.json();
-      } catch (err) {
+      } catch (err: any) {
         console.error("Failed to generate Razorpay order ID from server:", err);
-        alert("Failed to initialize payment transaction. Please try again.");
+        alert(err?.message || "Failed to initialize payment transaction. Please try again.");
         setPlacingOrder(false);
         return;
       }

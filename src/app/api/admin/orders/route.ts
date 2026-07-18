@@ -1,8 +1,15 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/utils/authOptions";
 import { prisma } from "@/utils/prisma";
 
 export async function GET() {
   try {
+    const session = await getServerSession(authOptions);
+    const adminEmail = process.env.ADMIN_EMAIL || "admin@inkandcottonclub.com";
+    if (!session || !session.user || session.user.email !== adminEmail) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
     const orders = await prisma.order.findMany({
       include: {
         user: {
@@ -24,6 +31,11 @@ export async function GET() {
 
 export async function PATCH(request: Request) {
   try {
+    const session = await getServerSession(authOptions);
+    const adminEmail = process.env.ADMIN_EMAIL || "admin@inkandcottonclub.com";
+    if (!session || !session.user || session.user.email !== adminEmail) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
     const body = await request.json();
     const { id, status, trackingNumber } = body;
 
@@ -47,72 +59,20 @@ export async function PATCH(request: Request) {
       }
     }
 
-    // Check if status is transitioning to Shipped/Delivered (indicating payment confirmed/fulfillment)
-    // and the order is currently in "Processing" status
-    const isConfirmingPayment = (status === "Shipped" || status === "Delivered") && currentOrder.status === "Processing";
-
-    if (isConfirmingPayment) {
-      const items = JSON.parse(currentOrder.items || "[]");
-
-      // 1. Verify stock for all items in this order in the separate inventory database
-      for (const item of items) {
-        const [productId, size] = item.id.split('-');
-        const colorName = item.colorName;
-        
-        let inv = await prisma.inventory.findUnique({
-          where: { productId_size_colorName: { productId, size, colorName } }
-        });
-
-        // Initialize default stock level of 3 if it doesn't exist
-        if (!inv) {
-          inv = await prisma.inventory.create({
-            data: { productId, size, colorName, stock: 3 }
+    // If status is transitioning to "Out of Stock (Cancelled)", restore stock for items
+    if (status === "Out of Stock (Cancelled)" && (currentOrder.status === "Processing" || currentOrder.status === "Shipped" || currentOrder.status === "Out for Delivery")) {
+      try {
+        const items = JSON.parse(currentOrder.items || "[]");
+        for (const item of items) {
+          const [productId, size] = item.id.split('-');
+          const colorName = item.colorName;
+          await prisma.inventory.update({
+            where: { productId_size_colorName: { productId, size, colorName } },
+            data: { stock: { increment: item.quantity } }
           });
         }
-
-        if (inv.stock < item.quantity) {
-          return new NextResponse(
-            `Fulfillment failed: "${item.name}" (Size ${size}) is out of stock!`,
-            { status: 400 }
-          );
-        }
-      }
-
-      // 2. Deduct stock and auto-cancel conflicting pending orders if stock drops to 0
-      for (const item of items) {
-        const [productId, size] = item.id.split('-');
-        const colorName = item.colorName;
-
-        const updatedInv = await prisma.inventory.update({
-          where: { productId_size_colorName: { productId, size, colorName } },
-          data: { stock: { decrement: item.quantity } }
-        });
-
-        // If stock drops to 0, cancel other pending orders that request this item
-        if (updatedInv.stock <= 0) {
-          const processingOrders = await prisma.order.findMany({
-            where: {
-              status: "Processing",
-              id: { not: id }
-            }
-          });
-
-          for (const otherOrder of processingOrders) {
-            const otherItems = JSON.parse(otherOrder.items || "[]");
-            const containsSoldOutItem = otherItems.some((oi: any) => {
-              const [oiProdId, oiSize] = oi.id.split('-');
-              return oiProdId === productId && oiSize === size && oi.colorName === colorName;
-            });
-
-            if (containsSoldOutItem) {
-              // Cancel conflicting order as Out of Stock
-              await prisma.order.update({
-                where: { id: otherOrder.id },
-                data: { status: "Out of Stock (Cancelled)" }
-              });
-            }
-          }
-        }
+      } catch (err) {
+        console.error("Failed to restore stock on cancellation:", err);
       }
     }
 
@@ -134,11 +94,36 @@ export async function PATCH(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    const session = await getServerSession(authOptions);
+    const adminEmail = process.env.ADMIN_EMAIL || "admin@inkandcottonclub.com";
+    if (!session || !session.user || session.user.email !== adminEmail) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 
     if (!id) {
       return new NextResponse("Order ID required", { status: 400 });
+    }
+
+    const orderToDelete = await prisma.order.findUnique({
+      where: { id }
+    });
+
+    if (orderToDelete && (orderToDelete.status === "Processing" || orderToDelete.status === "Shipped" || orderToDelete.status === "Out for Delivery")) {
+      try {
+        const items = JSON.parse(orderToDelete.items || "[]");
+        for (const item of items) {
+          const [productId, size] = item.id.split('-');
+          const colorName = item.colorName;
+          await prisma.inventory.update({
+            where: { productId_size_colorName: { productId, size, colorName } },
+            data: { stock: { increment: item.quantity } }
+          });
+        }
+      } catch (err) {
+        console.error("Failed to restore stock on deletion:", err);
+      }
     }
 
     await prisma.order.delete({

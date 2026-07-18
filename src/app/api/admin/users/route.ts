@@ -1,9 +1,16 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/utils/authOptions";
 import { prisma } from "@/utils/prisma";
 import { assignMembershipCard } from "@/utils/cardAssigner";
 
 export async function GET() {
   try {
+    const session = await getServerSession(authOptions);
+    const adminEmail = process.env.ADMIN_EMAIL || "admin@inkandcottonclub.com";
+    if (!session || !session.user || session.user.email !== adminEmail) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
     const users = await prisma.user.findMany({
       orderBy: { createdAt: "desc" },
       select: {
@@ -30,6 +37,11 @@ export async function GET() {
 
 export async function PATCH(request: Request) {
   try {
+    const session = await getServerSession(authOptions);
+    const adminEmail = process.env.ADMIN_EMAIL || "admin@inkandcottonclub.com";
+    if (!session || !session.user || session.user.email !== adminEmail) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
     const body = await request.json();
     const { id, tier } = body;
 
@@ -48,6 +60,11 @@ export async function PATCH(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    const session = await getServerSession(authOptions);
+    const adminEmail = process.env.ADMIN_EMAIL || "admin@inkandcottonclub.com";
+    if (!session || !session.user || session.user.email !== adminEmail) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 
