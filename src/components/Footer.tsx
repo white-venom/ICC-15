@@ -120,8 +120,7 @@ export default function Footer() {
           </p>
           <div className="h-px bg-white/5 my-1" />
           <p className="text-[11px] font-light text-ivory/50 leading-relaxed">
-            Phone: <a href="tel:+33140205050" className="hover:text-gold transition-colors font-medium text-ivory/75">+33 (0) 1 40 20 50 50</a><br />
-            Email: <a href="mailto:atelier@inkandcotton.club" className="hover:text-gold transition-colors font-medium text-ivory/75">atelier@inkandcotton.club</a>
+            Email: <a href="mailto:info@inkandcottonclub.com" className="hover:text-gold transition-colors font-medium text-ivory/75">info@inkandcottonclub.com</a>
           </p>
         </div>
 

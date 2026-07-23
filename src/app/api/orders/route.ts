@@ -39,7 +39,7 @@ export async function GET(request: Request) {
       }
 
       const userId = (session.user as any).id;
-      const adminEmail = process.env.ADMIN_EMAIL || "admin@inkandcottonclub.com";
+      const adminEmail = process.env.ADMIN_EMAIL || "info@inkandcottonclub.com";
       const isAdmin = session.user.email === adminEmail;
 
       let order;

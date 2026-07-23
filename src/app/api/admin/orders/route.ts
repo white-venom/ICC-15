@@ -6,7 +6,7 @@ import { prisma } from "@/utils/prisma";
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
-    const adminEmail = process.env.ADMIN_EMAIL || "admin@inkandcottonclub.com";
+    const adminEmail = process.env.ADMIN_EMAIL || "info@inkandcottonclub.com";
     if (!session || !session.user || session.user.email !== adminEmail) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
@@ -32,7 +32,7 @@ export async function GET() {
 export async function PATCH(request: Request) {
   try {
     const session = await getServerSession(authOptions);
-    const adminEmail = process.env.ADMIN_EMAIL || "admin@inkandcottonclub.com";
+    const adminEmail = process.env.ADMIN_EMAIL || "info@inkandcottonclub.com";
     if (!session || !session.user || session.user.email !== adminEmail) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
@@ -95,7 +95,7 @@ export async function PATCH(request: Request) {
 export async function DELETE(request: Request) {
   try {
     const session = await getServerSession(authOptions);
-    const adminEmail = process.env.ADMIN_EMAIL || "admin@inkandcottonclub.com";
+    const adminEmail = process.env.ADMIN_EMAIL || "info@inkandcottonclub.com";
     if (!session || !session.user || session.user.email !== adminEmail) {
       return new NextResponse("Unauthorized", { status: 401 });
     }

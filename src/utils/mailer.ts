@@ -5,7 +5,7 @@ const SMTP_HOST = process.env.SMTP_HOST || "";
 const SMTP_PORT = parseInt(process.env.SMTP_PORT || "587");
 const SMTP_USER = process.env.SMTP_USER || "";
 const SMTP_PASS = process.env.SMTP_PASS || "";
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@inkandcottonclub.com";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "info@inkandcottonclub.com";
 
 const isSMTPConfigured = SMTP_HOST && SMTP_USER && SMTP_PASS;
 
@@ -71,7 +71,7 @@ export async function sendOrderEmails(order: any, userDetails: any) {
       </table>
 
       <div style="text-align: center; font-size: 11px; color: #777; margin-top: 40px; border-top: 1px solid #eaeaea; padding-top: 20px;">
-        <p>This is an automated receipt for your purchase. Please contact support@inkandcottonclub.com for help.</p>
+        <p>This is an automated receipt for your purchase. Please contact info@inkandcottonclub.com for help.</p>
         <p>&copy; ${new Date().getFullYear()} Ink & Cotton Club. All rights reserved.</p>
       </div>
     </div>

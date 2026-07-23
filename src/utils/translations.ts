@@ -103,14 +103,14 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     footerQuote: '“Confidence is not loud. Elegance is not self-asserting. It is the silent presence defined by every thread.”',
     footerExplore: 'Explore',
     footerContact: 'Contact',
-    footerAddress: 'Atelier 109, Rue Saint-Honoré \n 75001 Paris, France',
+    footerAddress: '1908, Iconic Tower Corenthum, \n Sector 62, Noida, India',
     footerSubscribe: 'Subscribe',
     footerSubscribeDesc: 'Subscribe to receive exclusive release announcements.',
     footerEmailPlaceholder: 'Enter your email',
     footerSuccessMsg: 'Thank you. You are added to the list.',
     footerPrivacy: 'Privacy Policy',
     footerTerms: 'Terms of Service',
-    footerCopyright: '© 2026 Ink & Cotton Club. All Rights Reserved. Naples - Cairo - New York.',
+    footerCopyright: '© 2026 Ink & Cotton Club. All Rights Reserved. Noida - Delhi NCR - India.',
 
     // ── COLLECTION PAGE ──
     collectionTitle: 'The Autumn Registry',
@@ -267,14 +267,14 @@ export const TRANSLATIONS: Record<string, Record<string, string>> = {
     footerQuote: '“الثقة الحقيقية ليست صاخبة. الأناقة لا تفرض نفسها. بل هي الحضور الصامت الذي يعبر عنه كل خيط.”',
     footerExplore: 'استكشف',
     footerContact: 'اتصل بنا',
-    footerAddress: 'أتيليه ۱۰۹، شارع سانت هونوريه \n ٧٥٠٠١ باريس، فرنسا',
+    footerAddress: '١٩٠٨، برج كورينثوم الأيقوني، \n القطاع ٦٢، نويدا، الهند',
     footerSubscribe: 'الاشتراك',
     footerSubscribeDesc: 'اشترك لتلقي إعلانات الإصدارات الحصرية والكبسولات الخاصة.',
     footerEmailPlaceholder: 'أدخل بريدك الإلكتروني',
     footerSuccessMsg: 'شكرًا لك. تم إضافتك إلى القائمة.',
     footerPrivacy: 'سياسة الخصوصية',
     footerTerms: 'شروط الخدمة',
-    footerCopyright: '© ٢٠٢٦ نادي إينك آند كوتون. جميع الحقوق محفوظة. نابولي - القاهرة - نيويورك.',
+    footerCopyright: '© ٢٠٢٦ نادي إينك آند كوتون. جميع الحقوق محفوظة. نويدا - دلهي ان سي ار - الهند.',
 
     // ── COLLECTION PAGE ──
     collectionTitle: 'سجل الخريف',

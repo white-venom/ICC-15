@@ -13,7 +13,7 @@ export async function POST(request: Request) {
   try {
     // 1. Require admin authentication
     const session = await getServerSession(authOptions);
-    const adminEmail = process.env.ADMIN_EMAIL || "admin@inkandcottonclub.com";
+    const adminEmail = process.env.ADMIN_EMAIL || "info@inkandcottonclub.com";
     if (!session?.user?.email || session.user.email !== adminEmail) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

@@ -7,7 +7,7 @@ import CARDS from "@/utils/cards.json";
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
-    const adminEmail = process.env.ADMIN_EMAIL || "admin@inkandcottonclub.com";
+    const adminEmail = process.env.ADMIN_EMAIL || "info@inkandcottonclub.com";
     if (!session || !session.user || session.user.email !== adminEmail) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
