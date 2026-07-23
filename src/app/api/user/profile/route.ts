@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/utils/authOptions";
 import { prisma } from "@/utils/prisma";
 import { generateUniqueReferralCode } from "@/utils/referral";
+import crypto from "crypto";
 
 const profileSelectFields = {
   id: true,
@@ -19,14 +20,14 @@ const profileSelectFields = {
   country: true,
   points: true,
   referralCode: true,
-  referredBy: {
+  user: {
     select: {
       id: true,
       name: true,
       email: true
     }
   },
-  referrals: {
+  other_user: {
     select: {
       id: true,
       name: true,
@@ -34,10 +35,10 @@ const profileSelectFields = {
       tier: true
     }
   },
-  orders: {
+  order: {
     orderBy: { createdAt: "desc" as const }
   },
-  savedItems: {
+  saveditem: {
     orderBy: { createdAt: "desc" as const }
   }
 };
@@ -65,10 +66,12 @@ export async function GET() {
       const referralCode = await generateUniqueReferralCode();
       await prisma.user.create({
         data: {
+          id: crypto.randomUUID(),
           email,
           name: session.user.name || email.split('@')[0],
           tier: "None",
-          referralCode
+          referralCode,
+          updatedAt: new Date()
         }
       });
 

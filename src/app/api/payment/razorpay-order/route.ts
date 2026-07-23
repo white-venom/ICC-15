@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/utils/prisma';
+import crypto from 'crypto';
 
 export async function POST(request: Request) {
   try {
@@ -21,7 +22,7 @@ export async function POST(request: Request) {
 
         if (!inv) {
           inv = await prisma.inventory.create({
-            data: { productId, size, colorName, stock: 3 }
+            data: { id: crypto.randomUUID(), productId, size, colorName, stock: 3 }
           });
         }
 

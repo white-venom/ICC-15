@@ -197,6 +197,7 @@ export async function POST(request: Request) {
         if (!inv) {
           inv = await prisma.inventory.create({
             data: {
+              id: crypto.randomUUID(),
               productId,
               size,
               colorName,

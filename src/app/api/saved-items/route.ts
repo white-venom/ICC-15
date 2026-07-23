@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/utils/authOptions";
 import { prisma } from "@/utils/prisma";
+import crypto from "crypto";
 
 export async function GET() {
   try {
@@ -12,7 +13,7 @@ export async function GET() {
 
     const userId = (session.user as any).id;
 
-    const savedItems = await prisma.savedItem.findMany({
+    const savedItems = await (prisma as any).saveditem.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" }
     });
@@ -41,7 +42,7 @@ export async function POST(request: Request) {
     const userId = (session.user as any).id;
 
     // Check if already saved
-    const existing = await prisma.savedItem.findFirst({
+    const existing = await (prisma as any).saveditem.findFirst({
       where: { userId, productId }
     });
 
@@ -49,8 +50,9 @@ export async function POST(request: Request) {
       return NextResponse.json(existing);
     }
 
-    const savedItem = await prisma.savedItem.create({
+    const savedItem = await (prisma as any).saveditem.create({
       data: {
+        id: crypto.randomUUID(),
         userId,
         productId
       }
@@ -79,7 +81,7 @@ export async function DELETE(request: Request) {
 
     const userId = (session.user as any).id;
 
-    await prisma.savedItem.deleteMany({
+    await (prisma as any).saveditem.deleteMany({
       where: { userId, productId }
     });
 

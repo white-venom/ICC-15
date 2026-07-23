@@ -73,8 +73,10 @@ interface Member {
   cardNumber?: string | null;
   createdAt: string;
   _count: {
-    orders: number;
-    savedItems: number;
+    order?: number;
+    saveditem?: number;
+    orders?: number;
+    savedItems?: number;
   };
 }
 
@@ -1244,8 +1246,8 @@ export default function AdminPage() {
                           </td>
                           <td className="py-5 text-ivory/50">
                             <div className="space-y-0.5">
-                              <p>{m._count.orders} order requests placed</p>
-                              <p>{m._count.savedItems} items wishlisted</p>
+                              <p>{m._count.order ?? m._count.orders ?? 0} order requests placed</p>
+                              <p>{m._count.saveditem ?? m._count.savedItems ?? 0} items wishlisted</p>
                             </div>
                           </td>
                           <td className="py-5 text-right">

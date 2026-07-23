@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/utils/prisma";
 import { generateUniqueReferralCode } from "@/utils/referral";
+import crypto from "crypto";
 
 export async function POST(request: Request) {
   try {
@@ -39,14 +40,14 @@ export async function POST(request: Request) {
       const trimmedCode = referralCode.trim().toUpperCase();
       const referrer = await prisma.user.findUnique({
         where: { referralCode: trimmedCode },
-        select: { id: true, referrals: { select: { id: true } } }
+        select: { id: true, other_user: { select: { id: true } } }
       });
 
       if (!referrer) {
         return new NextResponse("Invalid referral code.", { status: 400 });
       }
 
-      if (referrer.referrals.length >= 5) {
+      if (referrer.other_user.length >= 5) {
         return new NextResponse("This referral code has reached its maximum limit of 5 referrals.", { status: 400 });
       }
 
@@ -58,12 +59,14 @@ export async function POST(request: Request) {
     const user = await prisma.$transaction(async (tx) => {
       const newUser = await tx.user.create({
         data: {
+          id: crypto.randomUUID(),
           name,
           email,
           password: hashedPassword,
           referralCode: myReferralCode,
           referredById: referrerId,
-          points: referrerId ? 100 : 0
+          points: referrerId ? 100 : 0,
+          updatedAt: new Date()
         }
       });
 
