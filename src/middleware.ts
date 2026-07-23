@@ -21,16 +21,6 @@ function isRateLimited(ip: string): boolean {
   return entry.count > RATE_LIMIT_MAX_REQUESTS;
 }
 
-// Clean up stale entries periodically (every 5 min)
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, value] of rateLimitMap.entries()) {
-    if (now > value.resetTime) {
-      rateLimitMap.delete(key);
-    }
-  }
-}, 5 * 60 * 1000);
-
 // ============================================================
 // Middleware
 // ============================================================
