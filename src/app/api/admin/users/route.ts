@@ -11,7 +11,7 @@ export async function GET() {
     if (!session || !session.user || session.user.email !== adminEmail) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
-    const users = await prisma.user.findMany({
+    const users = await (prisma.user.findMany as any)({
       orderBy: { createdAt: "desc" },
       select: {
         id: true,
@@ -22,8 +22,8 @@ export async function GET() {
         createdAt: true,
         _count: {
           select: {
-            orders: true,
-            savedItems: true
+            order: true,
+            saveditem: true
           }
         }
       }
