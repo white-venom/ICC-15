@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/utils/authOptions";
 import fs from "fs";
 import path from "path";
 
@@ -20,6 +22,13 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    // Require admin authentication
+    const session = await getServerSession(authOptions);
+    const adminEmail = process.env.ADMIN_EMAIL || "admin@inkandcottonclub.com";
+    if (!session?.user?.email || session.user.email !== adminEmail) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+
     const body = await request.json();
     fs.writeFileSync(journalsFilePath, JSON.stringify(body, null, 2), "utf8");
     return NextResponse.json({ success: true });

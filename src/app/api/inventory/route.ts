@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/utils/authOptions";
 import { prisma } from "@/utils/prisma";
 
 export async function GET(request: Request) {
@@ -41,6 +43,13 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    // Require admin authentication
+    const session = await getServerSession(authOptions);
+    const adminEmail = process.env.ADMIN_EMAIL || "admin@inkandcottonclub.com";
+    if (!session?.user?.email || session.user.email !== adminEmail) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+
     const body = await request.json();
     const { productId, size, colorName, stock } = body;
 

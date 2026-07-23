@@ -8,8 +8,6 @@ import { useSession } from 'next-auth/react';
 import { useAppContext } from '@/context/AppContext';
 import { TRANSLATIONS } from '@/utils/translations';
 import AtelierBackground from '@/components/AtelierBackground';
-import SignatureCollection from '@/components/SignatureCollection';
-import CanvasContainer from '@/components/CanvasContainer';
 
 interface CollectionProduct {
   id: string;
@@ -218,11 +216,6 @@ export default function CollectionPage() {
   const { data: session } = useSession();
   
   const [activeTab, setActiveTab] = useState<'all' | 'bestseller' | 'newarrival' | 'limited'>('all');
-  
-  // 3D Studio Mode State
-  const [isStudioMode, setIsStudioMode] = useState(false);
-  const [studioSection, setStudioSection] = useState('collection-white');
-  const [studioFocusArea, setStudioFocusArea] = useState<'all' | 'collar' | 'sleeve' | 'button'>('all');
 
   useEffect(() => {
     if (session) {
@@ -325,37 +318,9 @@ export default function CollectionPage() {
         >
           <div className="relative w-10 h-10 border-2 border-gold/10 border-t-gold rounded-full animate-spin" />
           <span className="text-[10px] uppercase tracking-[0.45em] text-gold font-sans font-semibold animate-pulse-slow">
-            {isArabic ? 'تحميل المعرض التفاعلي...' : 'Curating 3D Studio...'}
+            {isArabic ? 'تحميل المعرض...' : 'Curating Gallery...'}
           </span>
         </motion.div>
-      </div>
-    );
-  }
-
-  // Render 3D Studio experience
-  if (isStudioMode) {
-    return (
-      <div className="relative min-h-screen bg-[#050505] text-ivory" dir={isArabic ? 'rtl' : 'ltr'}>
-        {/* Exit Floating Button */}
-        <div className={`fixed top-24 ${isArabic ? 'right-6 md:right-16' : 'left-6 md:left-16'} z-50`}>
-          <button
-            onClick={() => setIsStudioMode(false)}
-            className="px-6 py-3 bg-[#080808]/80 backdrop-blur-md border border-white/10 hover:border-gold hover:text-gold text-white/90 rounded-full text-[9px] uppercase tracking-[0.2em] font-sans transition-all duration-300 flex items-center gap-2 shadow-2xl"
-          >
-            <LayoutGrid size={11} /> {isArabic ? 'الخروج من الاستوديو' : 'Exit 3D Studio'}
-          </button>
-        </div>
-
-        {/* 3D WebGL Canvas Layer */}
-        <CanvasContainer activeSection={studioSection} focusArea={studioFocusArea} />
-
-        {/* Scroll spec details overlay */}
-        <SignatureCollection
-          products={products}
-          onSectionChange={setStudioSection}
-          onFocusAreaChange={setStudioFocusArea}
-          onBuy={handleBuy}
-        />
       </div>
     );
   }
@@ -384,14 +349,6 @@ export default function CollectionPage() {
               {isArabic ? 'قمصان مميزة. كل قطعة تُصنع خصيصاً لك عند الطلب خلال ١٤ يوم عمل.' : 'Premium signatures. Each made to order within 14 working days — crafted exclusively for you.'}
             </p>
           </div>
-
-          {/* View Mode Toggle */}
-          <button
-            onClick={() => setIsStudioMode(true)}
-            className="px-6 py-3 border border-gold/30 text-gold hover:bg-gold hover:text-black font-semibold text-[9px] uppercase tracking-[0.2em] rounded-full transition-all duration-300 flex items-center gap-2 cursor-pointer shadow-lg"
-          >
-            <Sparkles size={11} /> {isArabic ? 'استوديو تفاعلي ثلاثي الأبعاد' : 'Interactive 3D Studio'}
-          </button>
         </motion.div>
       </div>
 

@@ -135,6 +135,7 @@ export default function AdminPage() {
   const [uploading, setUploading] = useState(false);
 
   // Direct passcode auth states
+  const [adminLoginEmail, setAdminLoginEmail] = useState('');
   const [passcode, setPasscode] = useState('');
   const [authError, setAuthError] = useState('');
   const [authenticating, setAuthenticating] = useState(false);
@@ -190,8 +191,8 @@ export default function AdminPage() {
   const isFirstLoad = React.useRef(true);
 
   useEffect(() => {
-    const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "xcplllp@gmail.com";
-    if (status === 'authenticated' && session?.user?.email === adminEmail) {
+    if (status === 'authenticated') {
+      // Let the server-side admin APIs determine authorization
       fetchData();
     }
   }, [activeTab, status, session]);
@@ -753,20 +754,18 @@ export default function AdminPage() {
     }
   };
 
-  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "xcplllp@gmail.com";
-
   const handleUnlock = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
     setAuthenticating(true);
     try {
       const res = await signIn('credentials', {
-        email: adminEmail,
+        email: adminLoginEmail,
         password: passcode,
         redirect: false
       });
       if (res?.error) {
-        setAuthError('Invalid administrative passcode.');
+        setAuthError('Invalid credentials.');
       }
     } catch (err) {
       console.error(err);
@@ -784,7 +783,7 @@ export default function AdminPage() {
     );
   }
 
-  if (status === 'unauthenticated' || (session?.user && session.user.email !== adminEmail)) {
+  if (status === 'unauthenticated' || !session?.user) {
     return (
       <div className="min-h-screen bg-[#050505] text-ivory flex flex-col justify-center items-center font-sans px-6">
         <div className="max-w-md w-full space-y-8 bg-[#111] border border-white/5 p-10 rounded-[2.5rem] shadow-2xl text-center">
@@ -795,6 +794,17 @@ export default function AdminPage() {
           </div>
 
           <form onSubmit={handleUnlock} className="space-y-6 pt-4">
+            <div className="space-y-1 text-left">
+              <label className="text-[9px] uppercase tracking-widest text-ivory/50 block pl-1">Admin Email</label>
+              <input
+                type="email"
+                value={adminLoginEmail}
+                onChange={(e) => setAdminLoginEmail(e.target.value)}
+                placeholder="admin@example.com"
+                className="w-full bg-[#1b1b1b] border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gold/50 font-mono placeholder:text-white/10 tracking-widest"
+                required
+              />
+            </div>
             <div className="space-y-1 text-left">
               <label className="text-[9px] uppercase tracking-widest text-ivory/50 block pl-1">Passcode</label>
               <input

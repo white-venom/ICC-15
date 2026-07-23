@@ -9,15 +9,20 @@ export async function POST(request: Request) {
       return new NextResponse("Missing verification parameters", { status: 400 });
     }
 
-    // Verify simulated sandbox transactions instantly
+    // Reject simulated/sandbox IDs in production
     if (razorpay_order_id.startsWith("order_sim_") || razorpay_payment_id.startsWith("pay_sim_")) {
+      if (process.env.NODE_ENV === "production") {
+        return NextResponse.json({ verified: false, message: "Simulated payments are not accepted" }, { status: 400 });
+      }
+      // Only allow in development mode
+      console.warn("[DEV ONLY] Accepting simulated payment verification.");
       return NextResponse.json({ verified: true, simulated: true });
     }
 
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
     if (!keySecret || keySecret.includes("dummy")) {
-      console.warn("Razorpay Secret Key not configured. Accepting sandbox test verification.");
-      return NextResponse.json({ verified: true, simulated: true });
+      console.error("RAZORPAY_KEY_SECRET is not configured. Payment verification rejected.");
+      return NextResponse.json({ verified: false, message: "Payment gateway not configured" }, { status: 500 });
     }
 
     // Verify cryptographic signature: HMAC SHA256 (order_id + "|" + payment_id, keySecret)
@@ -27,7 +32,9 @@ export async function POST(request: Request) {
       .update(text)
       .digest('hex');
 
-    const isVerified = generatedSignature === razorpay_signature;
+    // Use timing-safe comparison to prevent timing attacks
+    const isVerified = generatedSignature.length === razorpay_signature.length &&
+      crypto.timingSafeEqual(Buffer.from(generatedSignature), Buffer.from(razorpay_signature));
 
     if (isVerified) {
       return NextResponse.json({ verified: true });

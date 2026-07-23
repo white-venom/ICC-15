@@ -35,7 +35,12 @@ export async function POST(request: Request) {
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
     if (!keyId || !keySecret || keyId.includes("dummy") || keySecret.includes("dummy")) {
-      console.warn("Razorpay API Keys not configured. Using sandbox simulation mode.");
+      if (process.env.NODE_ENV === "production") {
+        console.error("Razorpay API Keys not configured in production. Rejecting payment.");
+        return new NextResponse("Payment gateway not configured", { status: 500 });
+      }
+      // Only allow simulated orders in development
+      console.warn("[DEV ONLY] Razorpay keys not configured. Using sandbox simulation mode.");
       return NextResponse.json({
         simulated: true,
         id: "order_sim_" + Math.random().toString(36).substring(2, 15),

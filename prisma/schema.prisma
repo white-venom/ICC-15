@@ -7,62 +7,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  password      String?
-  emailVerified DateTime?
-  image         String?
-  tier          String    @default("None")
-  cardNumber    String?
-  phone         String?
-  address       String?
-  apartment     String?
-  city          String?
-  state         String?
-  pincode       String?
-  country       String?
-  accounts      Account[]
-  sessions      Session[]
-  orders        Order[]
-  savedItems    SavedItem[]
-  points        Int       @default(0)
-  referralCode  String?   @unique
-  referredById  String?
-  referredBy    User?     @relation("UserReferrals", fields: [referredById], references: [id], onDelete: SetNull)
-  referrals     User[]    @relation("UserReferrals")
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-}
-
-model Order {
-  id              String   @id @default(cuid())
-  userId          String?
-  items           String   // JSON string of cart items
-  totalPrice      Float
-  status          String   @default("Processing") // "Processing" | "Shipped" | "Delivered"
-  trackingNumber  String?
-  shippingAddress String?
-  pincode         String?
-  paymentMethod   String?
-  contactEmail    String?
-  contactPhone    String?
-  customerName    String?
-  createdAt       DateTime @default(now())
-  user            User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model SavedItem {
-  id        String   @id @default(cuid())
-  userId    String
-  productId String   // id from products.json
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model Account {
-  id                String  @id @default(cuid())
+model account {
+  id                String  @id
   userId            String
   type              String
   provider          String
@@ -74,35 +20,96 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
+  user              user    @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Account_userId_fkey")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
+  @@unique([provider, providerAccountId], map: "Account_provider_providerAccountId_key")
+  @@index([userId], map: "Account_userId_fkey")
 }
 
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
-}
-
-model Inventory {
-  id        String @id @default(cuid())
-  productId String // from products.json (e.g., "white")
-  size      String // size label (e.g., "40")
-  colorName String // e.g., "Ivory White"
+model inventory {
+  id        String @id
+  productId String
+  size      String
+  colorName String
   stock     Int    @default(5)
 
-  @@unique([productId, size, colorName])
+  @@unique([productId, size, colorName], map: "Inventory_productId_size_colorName_key")
 }
 
+model order {
+  id              String   @id
+  userId          String?
+  items           String
+  totalPrice      Float
+  status          String   @default("Processing")
+  trackingNumber  String?
+  shippingAddress String?
+  pincode         String?
+  paymentMethod   String?
+  contactEmail    String?
+  contactPhone    String?
+  customerName    String?
+  createdAt       DateTime @default(now())
+  user            user?    @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Order_userId_fkey")
+
+  @@index([userId], map: "Order_userId_fkey")
+}
+
+model saveditem {
+  id        String   @id
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "SavedItem_userId_fkey")
+
+  @@index([userId], map: "SavedItem_userId_fkey")
+}
+
+model session {
+  id           String   @id
+  sessionToken String   @unique(map: "Session_sessionToken_key")
+  userId       String
+  expires      DateTime
+  user         user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Session_userId_fkey")
+
+  @@index([userId], map: "Session_userId_fkey")
+}
+
+model user {
+  id            String      @id
+  name          String?
+  email         String?     @unique(map: "User_email_key")
+  password      String?
+  emailVerified DateTime?
+  image         String?
+  tier          String      @default("None")
+  phone         String?
+  address       String?
+  apartment     String?
+  city          String?
+  state         String?
+  pincode       String?
+  country       String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime
+  cardNumber    String?
+  points        Int         @default(0)
+  referralCode  String?     @unique(map: "User_referralCode_key")
+  referredById  String?
+  account       account[]
+  order         order[]
+  saveditem     saveditem[]
+  session       session[]
+  user          user?       @relation("userTouser", fields: [referredById], references: [id], map: "User_referredById_fkey")
+  other_user    user[]      @relation("userTouser")
+
+  @@index([referredById], map: "User_referredById_fkey")
+}
+
+model verificationtoken {
+  identifier String
+  token      String   @unique(map: "VerificationToken_token_key")
+  expires    DateTime
+
+  @@unique([identifier, token], map: "VerificationToken_identifier_token_key")
+}

@@ -4,6 +4,9 @@ import { authOptions } from "@/utils/authOptions";
 import { prisma } from "@/utils/prisma";
 import { assignMembershipCard } from "@/utils/cardAssigner";
 import { sendOrderEmails } from "@/utils/mailer";
+import crypto from "crypto";
+import fs from "fs";
+import path from "path";
 
 // Memory lock for active order placements
 const activeLocks = new Set<string>();
@@ -27,23 +30,36 @@ export async function GET(request: Request) {
     const id = searchParams.get("id");
     const trackingNumber = searchParams.get("trackingNumber");
 
-    if (id) {
-      const order = await prisma.order.findUnique({
-        where: { id }
-      });
-      if (!order) return new NextResponse("Order not found", { status: 404 });
-      return NextResponse.json(order);
-    }
-
-    if (trackingNumber) {
-      const order = await prisma.order.findFirst({
-        where: { trackingNumber }
-      });
-      if (!order) return new NextResponse("Order not found", { status: 404 });
-      return NextResponse.json(order);
-    }
-
     const session = await getServerSession(authOptions);
+
+    if (id || trackingNumber) {
+      // Require authentication for order lookups
+      if (!session || !session.user) {
+        return new NextResponse("Unauthorized", { status: 401 });
+      }
+
+      const userId = (session.user as any).id;
+      const adminEmail = process.env.ADMIN_EMAIL || "admin@inkandcottonclub.com";
+      const isAdmin = session.user.email === adminEmail;
+
+      let order;
+      if (id) {
+        order = await prisma.order.findUnique({ where: { id } });
+      } else {
+        order = await prisma.order.findFirst({ where: { trackingNumber: trackingNumber! } });
+      }
+
+      if (!order) return new NextResponse("Order not found", { status: 404 });
+
+      // Verify ownership: order must belong to user, or user must be admin
+      if (!isAdmin && order.userId !== userId) {
+        return new NextResponse("Forbidden", { status: 403 });
+      }
+
+      return NextResponse.json(order);
+    }
+
+    // List all orders for the current user
     if (!session || !session.user) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
@@ -138,6 +154,33 @@ export async function POST(request: Request) {
 
     const parsedItems = typeof items === "string" ? JSON.parse(items) : items;
 
+    // Server-side price verification: load product catalog and recalculate total
+    let serverCalculatedTotal = 0;
+    try {
+      const productsPath = path.join(process.cwd(), 'src/utils/products.json');
+      const productsData = JSON.parse(fs.readFileSync(productsPath, 'utf8'));
+      const productMap = new Map<string, number>(productsData.map((p: any) => [p.id, p.price]));
+
+      for (const item of parsedItems) {
+        const [productId] = item.id.split('-');
+        const serverPrice = productMap.get(productId);
+        if (serverPrice === undefined || serverPrice === null) {
+          return new NextResponse(`Unknown product: "${item.name || productId}"`, { status: 400 });
+        }
+        serverCalculatedTotal += Number(serverPrice) * item.quantity;
+      }
+    } catch (priceErr) {
+      console.error("PRICE_VERIFICATION_ERROR", priceErr);
+      return new NextResponse("Unable to verify pricing. Please try again.", { status: 500 });
+    }
+
+    // Allow a small tolerance for tax/discount differences but reject obvious tampering
+    const clientTotal = parseFloat(totalPrice);
+    if (clientTotal < serverCalculatedTotal * 0.5) {
+      console.error(`PRICE_TAMPERING_DETECTED: client=${clientTotal}, server=${serverCalculatedTotal}`);
+      return new NextResponse("Price verification failed. Please refresh and try again.", { status: 400 });
+    }
+
     // 3. Verify stock is still available and deduct it atomically
     const decrementedItems: { productId: string; size: string; colorName: string; quantity: number }[] = [];
     try {
@@ -203,12 +246,12 @@ export async function POST(request: Request) {
       throw stockErr;
     }
 
-    // 4. Generate tracking number
-    const trackingNumber = "ICC-" + Math.floor(100000 + Math.random() * 900000);
+    // 4. Generate tracking number using cryptographically secure random
+    const trackingNumber = "ICC-" + crypto.randomUUID().replace(/-/g, '').substring(0, 10).toUpperCase();
 
     const orderData: any = {
       items: typeof items === "string" ? items : JSON.stringify(items),
-      totalPrice: parseFloat(totalPrice),
+      totalPrice: clientTotal,
       trackingNumber,
       status: "Processing",
       shippingAddress,

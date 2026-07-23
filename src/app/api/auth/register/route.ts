@@ -12,6 +12,14 @@ export async function POST(request: Request) {
       return new NextResponse("Missing Info", { status: 400 });
     }
 
+    // Password strength validation
+    if (password.length < 8) {
+      return new NextResponse("Password must be at least 8 characters long.", { status: 400 });
+    }
+    if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
+      return new NextResponse("Password must contain at least one uppercase letter, one lowercase letter, and one number.", { status: 400 });
+    }
+
     const exist = await prisma.user.findUnique({
       where: {
         email: email
@@ -19,7 +27,8 @@ export async function POST(request: Request) {
     });
 
     if (exist) {
-      return new NextResponse("User already exists", { status: 400 });
+      // Generic error to prevent account enumeration
+      return new NextResponse("Registration failed. Please try again or sign in.", { status: 400 });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -72,7 +81,7 @@ export async function POST(request: Request) {
       return newUser;
     });
 
-    return NextResponse.json(user);
+    return NextResponse.json({ id: user.id, email: user.email, name: user.name });
   } catch (error) {
     console.error("REGISTRATION_ERROR", error);
     return new NextResponse("Internal Error", { status: 500 });
